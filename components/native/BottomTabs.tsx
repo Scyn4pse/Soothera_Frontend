@@ -27,15 +27,12 @@ const tabs: TabConfig[] = [
 export function BottomTabs({ activeTab, onTabPress }: BottomTabsProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const isDark = colorScheme === 'dark';
 
   return (
     <View
+      className={`flex-row bg-white dark:bg-[#151718] border-t border-gray-200 dark:border-[#2a2a2a] ${Platform.OS === 'ios' ? 'pb-5' : ''}`}
       style={{
-        flexDirection: 'row',
-        backgroundColor: colors.background,
-        borderTopWidth: 1,
-        borderTopColor: colorScheme === 'dark' ? '#2a2a2a' : '#e5e5e5',
-        paddingBottom: Platform.OS === 'ios' ? 20 : 0,
         elevation: 8,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: -2 },
@@ -52,22 +49,13 @@ export function BottomTabs({ activeTab, onTabPress }: BottomTabsProps) {
           <TouchableOpacity
             key={tab.id}
             onPress={() => onTabPress(tab.id)}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingVertical: 12,
-            }}
+            className="flex-1 items-center justify-center py-3"
             activeOpacity={0.7}
           >
             <Ionicons name={iconName} size={24} color={color} />
             <Text
-              style={{
-                fontSize: 12,
-                marginTop: 4,
-                color: color,
-                fontWeight: isActive ? '600' : '400',
-              }}
+              className={`text-xs mt-1 ${isActive ? 'font-semibold' : 'font-normal'}`}
+              style={{ color }}
             >
               {tab.label}
             </Text>

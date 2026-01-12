@@ -1,7 +1,7 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import NativeNavigator from './src/navigation/NativeNavigator';
+import NativeNavigator from './navigation/NativeNavigator';
 import './global.css';
 
 // This is the native entry point with custom state-based navigation
