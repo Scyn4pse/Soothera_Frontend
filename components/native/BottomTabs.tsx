@@ -43,7 +43,7 @@ export function BottomTabs({ activeTab, onTabPress }: BottomTabsProps) {
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         const iconName = isActive ? tab.icon : tab.iconOutline;
-        const color = isActive ? colors.tint : colors.icon;
+        const color = isActive ? colors.primary : colors.icon;
 
         return (
           <TouchableOpacity
