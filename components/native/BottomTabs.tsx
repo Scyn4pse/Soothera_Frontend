@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
 
-type TabId = 'home' | 'explore' | 'profile';
+type TabId = 'home' | 'bookings' | 'profile';
 
 interface BottomTabsProps {
   activeTab: TabId;
@@ -20,7 +20,7 @@ interface TabConfig {
 
 const tabs: TabConfig[] = [
   { id: 'home', label: 'Home', icon: 'home', iconOutline: 'home-outline' },
-  { id: 'explore', label: 'Explore', icon: 'compass', iconOutline: 'compass-outline' },
+  { id: 'bookings', label: 'Bookings', icon: 'calendar', iconOutline: 'calendar-outline' },
   { id: 'profile', label: 'Profile', icon: 'person', iconOutline: 'person-outline' },
 ];
 

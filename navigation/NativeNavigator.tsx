@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { BottomTabs } from '../components/native/BottomTabs';
 import HomeScreen from '../screens/native/HomeScreen.native';
-import ExploreScreen from '../screens/native/ExploreScreen.native';
+import BookingsScreen from '../screens/native/BookingsScreen.native';
 import ProfileScreen from '../screens/native/ProfileScreen.native';
 
-type TabId = 'home' | 'explore' | 'profile';
+type TabId = 'home' | 'bookings' | 'profile';
 
 // Main content with bottom tab navigation
 function MainContent() {
@@ -19,8 +19,8 @@ function MainContent() {
     switch (activeTab) {
       case 'home':
         return <HomeScreen />;
-      case 'explore':
-        return <ExploreScreen />;
+      case 'bookings':
+        return <BookingsScreen />;
       case 'profile':
         return <ProfileScreen />;
       default:
