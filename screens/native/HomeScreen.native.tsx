@@ -28,10 +28,10 @@ export default function HomeScreen() {
 
   // Mock data for top rated salons
   const topRatedSalons = [
-    { id: '1', name: 'Salon Elite', rating: 4.8, image: require('../../assets/salon.jpg') },
-    { id: '2', name: 'Beauty Haven', rating: 4.9, image: require('../../assets/salon.jpg') },
-    { id: '3', name: 'Style Studio', rating: 4.7, image: require('../../assets/salon.jpg') },
-    { id: '4', name: 'Glamour House', rating: 4.8, image: require('../../assets/salon.jpg') },
+    { id: '1', name: 'Salon Elite', rating: 4.8, location: 'Talamban, Cebu', image: require('../../assets/salon.jpg') },
+    { id: '2', name: 'Beauty Haven', rating: 4.9, location: 'Banilad, Cebu', image: require('../../assets/salon.jpg') },
+    { id: '3', name: 'Style Studio', rating: 4.7, location: 'Mandaue City, Cebu', image: require('../../assets/salon.jpg') },
+    { id: '4', name: 'Glamour House', rating: 4.8, location: 'Lapu-Lapu City, Cebu', image: require('../../assets/salon.jpg') },
   ];
 
   return (
@@ -58,8 +58,8 @@ export default function HomeScreen() {
         </View>
 
         {/* Search Bar and Filter */}
-        <View className="flex-row items-center px-5 mb-6">
-          <View className="flex-1 flex-row items-center bg-gray-100 rounded-full px-4 py-3 mr-3">
+        <View className="flex-row items-center px-5 py-2 mb-4">
+          <View className="flex-1 flex-row items-center bg-gray-100 rounded-full px-4 py-1 mr-3">
             <Ionicons name="search-outline" size={20} color={colors.icon} />
             <TextInput
               placeholder="Search Salon, Specialist..."
@@ -221,9 +221,17 @@ export default function HomeScreen() {
                     <Text className="text-white text-sm font-semibold ml-1">{salon.rating}</Text>
                   </View>
                 </View>
-                <Text className="text-base font-semibold" style={{ color: colors.text }}>
-                  {salon.name}
-                </Text>
+                <View>
+                  <Text className="text-base font-semibold mb-1" style={{ color: colors.text }}>
+                    {salon.name}
+                  </Text>
+                  <View className="flex-row items-center">
+                    <Ionicons name="location" size={14} color={colors.icon} />
+                    <Text className="text-sm ml-1" style={{ color: colors.icon }}>
+                      {salon.location}
+                    </Text>
+                  </View>
+                </View>
               </View>
             ))}
           </ScrollView>
