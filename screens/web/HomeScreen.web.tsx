@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
+import { Text } from '@/components/Text';
 
 export default function HomeScreenWeb() {
   return (

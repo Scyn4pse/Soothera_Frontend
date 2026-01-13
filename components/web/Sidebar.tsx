@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
+import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 
 type Screen = 'home' | 'explore' | 'profile';

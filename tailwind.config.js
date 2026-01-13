@@ -10,7 +10,12 @@ module.exports = {
 
   presets: [require('nativewind/preset')],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['CalSans-Regular'],
+        calsans: ['CalSans-Regular'],
+      },
+    },
   },
   plugins: [],
 };

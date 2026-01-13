@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TextInput, Image, TouchableOpacity, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { View, ScrollView, TextInput, Image, TouchableOpacity, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { Text } from '@/components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Header } from '@/components/native/Header';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -38,24 +40,7 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header Section */}
-        <View className="flex-row items-center justify-between px-5 pt-4 pb-4">
-          {/* User Profile */}
-          <View className="flex-row items-center">
-            <Image
-              source={require('../../assets/pfp.png')}
-              className="w-10 h-10 rounded-full mr-3"
-            />
-            <Text className="text-base font-semibold" style={{ color: colors.text }}>
-              John Doe
-            </Text>
-          </View>
-
-          {/* Notification Icon */}
-          <TouchableOpacity className="relative">
-            <Ionicons name="notifications-outline" size={24} color={colors.text} />
-            <View className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full" style={{ backgroundColor: primaryColor }} />
-          </TouchableOpacity>
-        </View>
+        <Header />
 
         {/* Search Bar and Filter */}
         <View className="flex-row items-center px-5 py-2 mb-4">

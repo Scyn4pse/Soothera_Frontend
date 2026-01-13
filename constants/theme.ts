@@ -26,3 +26,13 @@ export const Colors = {
     tabIconSelected: tintColorDark,
   },
 };
+
+/**
+ * Typography configuration
+ */
+export const Typography = {
+  fontFamily: 'Poppins',
+  default: {
+    fontFamily: 'Poppins',
+  },
+};

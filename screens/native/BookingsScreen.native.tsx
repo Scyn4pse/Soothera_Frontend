@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { Text } from '@/components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Header } from '@/components/native/Header';
 
 type BookingStatus = 'completed' | 'cancelled' | 'confirmed' | 'pending';
 
@@ -15,7 +17,7 @@ interface Booking {
   date: string;
   time: string;
   therapist: string;
-  price?: string;
+  price?: number;
 }
 
 export default function BookingsScreen() {
@@ -55,7 +57,7 @@ export default function BookingsScreen() {
       date: 'Sunday, April 21, 2024',
       time: '03:00 PM - 04:00 PM',
       therapist: 'Ms. Sarah Jones',
-      price: 'P120.00',
+      price: 120.00,
     },
     {
       id: '4',
@@ -65,7 +67,7 @@ export default function BookingsScreen() {
       date: 'Tuesday, March 12, 2024',
       time: '11:30 AM - 12:30 PM',
       therapist: 'Mr. John Smith',
-      price: 'P95.00',
+      price: 95.00,
     },
   ];
 
@@ -97,6 +99,17 @@ export default function BookingsScreen() {
         return status;
     }
   };
+
+  // Calculate total spendings from past bookings
+  const calculateTotalSpendings = () => {
+    return pastBookings
+      .filter((booking) => booking.status === 'completed' && booking.price)
+      .reduce((total, booking) => {
+        return total + (booking.price || 0);
+      }, 0);
+  };
+
+  const totalSpendings = calculateTotalSpendings();
 
   const renderBookingCard = (booking: Booking, isPast: boolean) => (
     <View
@@ -156,8 +169,8 @@ export default function BookingsScreen() {
 
       {/* Price (only for past bookings) */}
       {isPast && booking.price && (
-        <Text className="text-xl font-bold mb-3" style={{ color: colors.text }}>
-          {booking.price}
+        <Text className="text-xl font-bold mb-3" style={{ color: colors.primary }}>
+          ₱{booking.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </Text>
       )}
 
@@ -217,6 +230,30 @@ export default function BookingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      {/* Header Section */}
+      <Header />
+
+      {/* Total Spendings Card */}
+      <View className="mx-5 mb-2">
+        <View
+          className="rounded-2xl p-5"
+          style={{
+            backgroundColor: primaryColor,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+          }}
+        >
+          <Text className="text-sm font-medium text-white/80 mb-1">Total Spendings</Text>
+          <Text className="text-3xl font-bold text-white">
+            ₱{totalSpendings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+          <Text className="text-xs text-white/70 mt-1">From completed bookings</Text>
+        </View>
+      </View>
+
       {/* Tab Navigation */}
       <View className="flex-row mx-5 mt-4 mb-4 bg-gray-100 rounded-xl p-1">
         <TouchableOpacity
