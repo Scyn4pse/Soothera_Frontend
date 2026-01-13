@@ -15,11 +15,13 @@ export interface TextProps extends RNTextProps {
  */
 export const Text = React.forwardRef<RNText, TextProps>(
   ({ style, className, ...props }, ref) => {
+    // Apply defaultFont last so it takes precedence (unless explicitly overridden in style prop)
+    // This ensures fontFamily is applied even when className has font-related styles
     return (
       <RNText
         ref={ref}
         className={className}
-        style={[styles.defaultFont, style]}
+        style={[style, styles.defaultFont]}
         {...props}
       />
     );
