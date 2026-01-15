@@ -25,7 +25,7 @@ interface Booking {
 export default function BookingsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled'>('upcoming');
 
   // Mock data for upcoming bookings
   const upcomingBookings: Booking[] = [
@@ -39,6 +39,7 @@ export default function BookingsScreen() {
       therapist: 'Ms. Emily Chen',
       rating: 4.8,
       address: 'Talamban, Cebu City',
+      price: 150.00,
     },
     {
       id: '2',
@@ -50,11 +51,12 @@ export default function BookingsScreen() {
       therapist: 'Mr. David Lee',
       rating: 4.7,
       address: 'Mandaue City, Cebu',
+      price: 180.00,
     },
   ];
 
-  // Mock data for past bookings
-  const pastBookings: Booking[] = [
+  // Mock data for completed bookings
+  const completedBookings: Booking[] = [
     {
       id: '3',
       serviceName: 'Hot Stone Massage',
@@ -65,6 +67,10 @@ export default function BookingsScreen() {
       therapist: 'Ms. Sarah Jones',
       price: 120.00,
     },
+  ];
+
+  // Mock data for cancelled bookings
+  const cancelledBookings: Booking[] = [
     {
       id: '4',
       serviceName: 'Swedish Massage',
@@ -106,7 +112,7 @@ export default function BookingsScreen() {
     }
   };
 
-  const renderBookingCard = (booking: Booking, isPast: boolean) => (
+  const renderBookingCard = (booking: Booking, tabType: 'upcoming' | 'completed' | 'cancelled') => (
     <View
       key={booking.id}
       className="bg-white rounded-2xl p-4 mb-4"
@@ -134,14 +140,16 @@ export default function BookingsScreen() {
             <Text className="text-lg font-bold flex-1" style={{ color: colors.text }}>
               {booking.serviceName}
             </Text>
-            <View
-              className="px-3 py-1 rounded-full ml-2"
-              style={{ backgroundColor: getStatusColor(booking.status) + '20' }}
-            >
-              <Text className="text-xs font-semibold" style={{ color: getStatusColor(booking.status) }}>
-                {getStatusText(booking.status)}
-              </Text>
-            </View>
+            {tabType === 'upcoming' && (
+              <View
+                className="px-3 py-1 rounded-full ml-2"
+                style={{ backgroundColor: getStatusColor(booking.status) + '20' }}
+              >
+                <Text className="text-xs font-semibold" style={{ color: getStatusColor(booking.status) }}>
+                  {getStatusText(booking.status)}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Date and Spa Name */}
@@ -177,62 +185,76 @@ export default function BookingsScreen() {
         </View>
       </View>
 
-      {/* Action Buttons - One Row */}
-      {!isPast && (
-        <View className="flex-row">
-          <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl mr-2 border"
-            style={{ borderColor: colors.icon, backgroundColor: 'white' }}
-          >
-            <Ionicons name="location-outline" size={16} color={colors.text} />
-            <Text className="text-sm font-semibold ml-2" style={{ color: colors.text }}>
-              Directions
-            </Text>
-          </TouchableOpacity>
+      {/* Price Row */}
+      {booking.price !== undefined && (
+        <View className="mb-3 flex-row justify-end">
+          <Text className="text-l" style={{ color: colors.primary }}>
+            ₱{booking.price.toFixed(2)}
+          </Text>
+        </View>
+      )}
+
+      {/* Action Buttons */}
+      <View className="flex-row">
+        {tabType === 'upcoming' && (
+          <>
+            <TouchableOpacity
+              className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl mr-2 border"
+              style={{ borderColor: colors.icon, backgroundColor: 'white' }}
+            >
+              <Ionicons name="location-outline" size={16} color={colors.text} />
+              <Text className="text-sm font-semibold ml-2" style={{ color: colors.text }}>
+                Directions
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl"
+              style={{ backgroundColor: primaryColor }}
+            >
+              <Ionicons name="checkmark-circle-outline" size={16} color="white" />
+              <Text className="text-sm text-white font-semibold ml-2">Manage Booking</Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {tabType === 'completed' && (
+          <>
+            <TouchableOpacity
+              className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl mr-2"
+              style={{ backgroundColor: primaryColor }}
+            >
+              <Ionicons name="refresh" size={16} color="white" />
+              <Text className="text-sm text-white font-semibold ml-2">Re-book</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl border"
+              style={{ borderColor: colors.icon, backgroundColor: 'white' }}
+            >
+              <Ionicons name="star-outline" size={16} color={colors.text} />
+              <Text className="text-sm font-semibold ml-2" style={{ color: colors.text }}>
+                Review
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {tabType === 'cancelled' && (
           <TouchableOpacity
             className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl"
             style={{ backgroundColor: primaryColor }}
           >
-            <Ionicons name="checkmark-circle-outline" size={16} color="white" />
-            <Text className="text-sm text-white font-semibold ml-2">Manage Booking</Text>
+            <Ionicons name="refresh" size={16} color="white" />
+            <Text className="text-sm text-white font-semibold ml-2">Re-book</Text>
           </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Past Bookings Actions */}
-      {isPast && (
-        <View className="flex-row">
-          <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center px-3 py-3 rounded-xl mr-2"
-            style={{ backgroundColor: primaryColor }}
-          >
-            <Ionicons name="refresh" size={18} color="white" />
-            <Text className="text-white font-semibold ml-2">Re-book</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center px-3 py-3 rounded-xl mr-2 border"
-            style={{ borderColor: colors.icon, backgroundColor: 'white' }}
-          >
-            <Ionicons name="star-outline" size={18} color={colors.text} />
-            <Text className="font-semibold ml-2" style={{ color: colors.text }}>
-              Review
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center px-3 py-3 rounded-xl border"
-            style={{ borderColor: colors.icon, backgroundColor: 'white' }}
-          >
-            <Ionicons name="document-text-outline" size={18} color={colors.text} />
-            <Text className="font-semibold ml-2" style={{ color: colors.text }}>
-              Invoice
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        )}
+      </View>
     </View>
   );
 
-  const currentBookings = activeTab === 'upcoming' ? upcomingBookings : pastBookings;
+  const currentBookings = 
+    activeTab === 'upcoming' ? upcomingBookings :
+    activeTab === 'completed' ? completedBookings :
+    cancelledBookings;
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -253,14 +275,25 @@ export default function BookingsScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className={`flex-1 py-3 rounded-lg ${activeTab === 'past' ? 'bg-white' : ''}`}
-          onPress={() => setActiveTab('past')}
+          className={`flex-1 py-3 rounded-lg ${activeTab === 'completed' ? 'bg-white' : ''}`}
+          onPress={() => setActiveTab('completed')}
         >
           <Text
-            className={`text-center font-semibold ${activeTab === 'past' ? '' : 'opacity-60'}`}
-            style={{ color: activeTab === 'past' ? colors.text : colors.icon }}
+            className={`text-center font-semibold ${activeTab === 'completed' ? '' : 'opacity-60'}`}
+            style={{ color: activeTab === 'completed' ? colors.text : colors.icon }}
           >
-            Past
+            Completed
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          className={`flex-1 py-3 rounded-lg ${activeTab === 'cancelled' ? 'bg-white' : ''}`}
+          onPress={() => setActiveTab('cancelled')}
+        >
+          <Text
+            className={`text-center font-semibold ${activeTab === 'cancelled' ? '' : 'opacity-60'}`}
+            style={{ color: activeTab === 'cancelled' ? colors.text : colors.icon }}
+          >
+            Cancelled
           </Text>
         </TouchableOpacity>
       </View>
@@ -268,15 +301,15 @@ export default function BookingsScreen() {
       {/* Bookings List */}
       <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
         {currentBookings.length > 0 ? (
-          currentBookings.map((booking) => renderBookingCard(booking, activeTab === 'past'))
+          currentBookings.map((booking) => renderBookingCard(booking, activeTab))
         ) : (
           <View className="items-center justify-center py-20">
             <Ionicons name="calendar-outline" size={64} color={colors.icon} />
             <Text className="text-lg font-semibold mt-4" style={{ color: colors.text }}>
-              No {activeTab === 'upcoming' ? 'upcoming' : 'past'} bookings
+              No {activeTab} bookings
             </Text>
             <Text className="text-sm mt-2" style={{ color: colors.icon }}>
-              Your {activeTab === 'upcoming' ? 'upcoming' : 'past'} bookings will appear here
+              Your {activeTab} bookings will appear here
             </Text>
           </View>
         )}
