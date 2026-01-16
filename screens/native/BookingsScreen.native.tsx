@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Text } from '@/components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,7 +25,33 @@ interface Booking {
 export default function BookingsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled' | 'all'>('upcoming');
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled' | 'all'>('all');
+  
+  // Tab order for paging (All is first)
+  const tabs: Array<'all' | 'upcoming' | 'completed' | 'cancelled'> = ['all', 'upcoming', 'completed', 'cancelled'];
+  const pageScrollViewRef = useRef<ScrollView>(null);
+  const screenWidth = Dimensions.get('window').width;
+  
+  // Handle page scroll to sync active tab
+  const handlePageScroll = (event: any) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const pageIndex = Math.round(offsetX / screenWidth);
+    if (pageIndex >= 0 && pageIndex < tabs.length) {
+      setActiveTab(tabs[pageIndex]);
+    }
+  };
+  
+  // Handle tab press to scroll to corresponding page
+  const handleTabPress = (tab: 'all' | 'upcoming' | 'completed' | 'cancelled') => {
+    const tabIndex = tabs.indexOf(tab);
+    if (tabIndex >= 0 && pageScrollViewRef.current) {
+      pageScrollViewRef.current.scrollTo({
+        x: tabIndex * screenWidth,
+        animated: true,
+      });
+    }
+    setActiveTab(tab);
+  };
 
   // Mock data for upcoming bookings
   const upcomingBookings: Booking[] = [
@@ -279,12 +305,6 @@ export default function BookingsScreen() {
     );
   };
 
-  const currentBookings = 
-    activeTab === 'upcoming' ? upcomingBookings :
-    activeTab === 'completed' ? completedBookings :
-    activeTab === 'cancelled' ? cancelledBookings :
-    getAllBookings();
-
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header Section */}
@@ -300,7 +320,7 @@ export default function BookingsScreen() {
           <TouchableOpacity
             className="px-4 py-3 rounded-lg mr-2"
             style={{ backgroundColor: activeTab === 'all' ? colors.primary : 'transparent' }}
-            onPress={() => setActiveTab('all')}
+            onPress={() => handleTabPress('all')}
           >
             <Text
               className={`text-center font-semibold ${activeTab === 'all' ? '' : 'opacity-60'}`}
@@ -312,7 +332,7 @@ export default function BookingsScreen() {
           <TouchableOpacity
             className="px-4 py-3 rounded-lg mr-2"
             style={{ backgroundColor: activeTab === 'upcoming' ? colors.primary : 'transparent' }}
-            onPress={() => setActiveTab('upcoming')}
+            onPress={() => handleTabPress('upcoming')}
           >
             <Text
               className={`text-center font-semibold ${activeTab === 'upcoming' ? '' : 'opacity-60'}`}
@@ -324,7 +344,7 @@ export default function BookingsScreen() {
           <TouchableOpacity
             className="px-4 py-3 rounded-lg mr-2"
             style={{ backgroundColor: activeTab === 'completed' ? colors.primary : 'transparent' }}
-            onPress={() => setActiveTab('completed')}
+            onPress={() => handleTabPress('completed')}
           >
             <Text
               className={`text-center font-semibold ${activeTab === 'completed' ? '' : 'opacity-60'}`}
@@ -336,7 +356,7 @@ export default function BookingsScreen() {
           <TouchableOpacity
             className="px-4 py-3 rounded-lg"
             style={{ backgroundColor: activeTab === 'cancelled' ? colors.primary : 'transparent' }}
-            onPress={() => setActiveTab('cancelled')}
+            onPress={() => handleTabPress('cancelled')}
           >
             <Text
               className={`text-center font-semibold ${activeTab === 'cancelled' ? '' : 'opacity-60'}`}
@@ -348,21 +368,46 @@ export default function BookingsScreen() {
         </ScrollView>
       </View>
 
-      {/* Bookings List */}
-      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
-        {currentBookings.length > 0 ? (
-          currentBookings.map((booking) => renderBookingCard(booking, activeTab))
-        ) : (
-          <View className="items-center justify-center py-20">
-            <Ionicons name="calendar-outline" size={64} color={colors.icon} />
-            <Text className="text-lg font-semibold mt-4" style={{ color: colors.text }}>
-              {activeTab === 'all' ? 'No bookings' : `No ${activeTab} bookings`}
-            </Text>
-            <Text className="text-sm mt-2" style={{ color: colors.icon }}>
-              {activeTab === 'all' ? 'Your bookings will appear here' : `Your ${activeTab} bookings will appear here`}
-            </Text>
-          </View>
-        )}
+      {/* Bookings List - Horizontal Pager */}
+      <ScrollView
+        ref={pageScrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={handlePageScroll}
+        className="flex-1"
+        decelerationRate="fast"
+      >
+        {tabs.map((tab) => {
+          const tabBookings = 
+            tab === 'upcoming' ? upcomingBookings :
+            tab === 'completed' ? completedBookings :
+            tab === 'cancelled' ? cancelledBookings :
+            getAllBookings();
+
+          return (
+            <ScrollView
+              key={tab}
+              className="flex-1 px-5"
+              style={{ width: screenWidth }}
+              showsVerticalScrollIndicator={false}
+            >
+              {tabBookings.length > 0 ? (
+                tabBookings.map((booking) => renderBookingCard(booking, tab))
+              ) : (
+                <View className="items-center justify-center py-20">
+                  <Ionicons name="calendar-outline" size={64} color={colors.icon} />
+                  <Text className="text-lg font-semibold mt-4" style={{ color: colors.text }}>
+                    {tab === 'all' ? 'No bookings' : `No ${tab} bookings`}
+                  </Text>
+                  <Text className="text-sm mt-2" style={{ color: colors.icon }}>
+                    {tab === 'all' ? 'Your bookings will appear here' : `Your ${tab} bookings will appear here`}
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
