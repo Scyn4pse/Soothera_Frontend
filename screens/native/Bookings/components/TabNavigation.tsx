@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Text';
 import { Colors } from '@/constants/theme';
@@ -31,10 +31,27 @@ const getTabLabel = (tab: TabType): string => {
 export default function TabNavigation({ activeTab, onTabPress }: TabNavigationProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Auto-scroll when tab changes
+  useEffect(() => {
+    if (activeTab === 'cancelled') {
+      // Scroll to the right (end) when cancelled is selected
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    } else if (activeTab === 'all') {
+      // Scroll to the left (start) when all is selected
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ x: 0, animated: true });
+      }, 100);
+    }
+  }, [activeTab]);
 
   return (
     <View className="mx-5 mt-2 mb-4 bg-gray-100 rounded-xl p-1">
       <ScrollView 
+        ref={scrollViewRef}
         horizontal 
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 4 }}

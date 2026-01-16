@@ -37,10 +37,10 @@ function MainContent() {
 
       {/* Bottom Tab Navigation - Hide when details screen is active */}
       {!isDetailsScreenActive && (
-        <BottomTabs
-          activeTab={activeTab}
-          onTabPress={handleTabPress}
-        />
+      <BottomTabs
+        activeTab={activeTab}
+        onTabPress={handleTabPress}
+      />
       )}
     </View>
   );
