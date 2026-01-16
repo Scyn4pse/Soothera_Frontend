@@ -25,7 +25,7 @@ interface Booking {
 export default function BookingsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled'>('upcoming');
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled' | 'all'>('upcoming');
 
   // Mock data for upcoming bookings
   const upcomingBookings: Booking[] = [
@@ -112,7 +112,34 @@ export default function BookingsScreen() {
     }
   };
 
-  const renderBookingCard = (booking: Booking, tabType: 'upcoming' | 'completed' | 'cancelled') => (
+  // Combine all bookings and sort by date (most recent first)
+  const getAllBookings = (): Booking[] => {
+    const allBookings = [...upcomingBookings, ...completedBookings, ...cancelledBookings];
+    
+    // Sort by date (most recent first)
+    // Date format is MM/DD/YYYY
+    return allBookings.sort((a, b) => {
+      const parseDate = (dateStr: string): Date => {
+        const [month, day, year] = dateStr.split('/').map(Number);
+        return new Date(year, month - 1, day);
+      };
+      
+      const dateA = parseDate(a.date);
+      const dateB = parseDate(b.date);
+      
+      // Most recent first (descending order)
+      return dateB.getTime() - dateA.getTime();
+    });
+  };
+
+  const renderBookingCard = (booking: Booking, tabType: 'upcoming' | 'completed' | 'cancelled' | 'all') => {
+    // Determine which buttons to show based on booking status when in 'all' tab
+    const showUpcomingButtons = tabType === 'upcoming' || (tabType === 'all' && (booking.status === 'confirmed' || booking.status === 'pending'));
+    const showCompletedButtons = tabType === 'completed' || (tabType === 'all' && booking.status === 'completed');
+    const showCancelledButtons = tabType === 'cancelled' || (tabType === 'all' && booking.status === 'cancelled');
+    const showStatusTag = tabType === 'upcoming' || (tabType === 'all' && (booking.status === 'confirmed' || booking.status === 'pending' || booking.status === 'completed' || booking.status === 'cancelled'));
+
+    return (
     <View
       key={booking.id}
       className="bg-white rounded-2xl p-4 mb-4"
@@ -140,7 +167,7 @@ export default function BookingsScreen() {
             <Text className="text-lg font-bold flex-1" style={{ color: colors.text }}>
               {booking.serviceName}
             </Text>
-            {tabType === 'upcoming' && (
+            {showStatusTag && (
               <View
                 className="px-3 py-1 rounded-full ml-2"
                 style={{ backgroundColor: getStatusColor(booking.status) + '20' }}
@@ -196,7 +223,7 @@ export default function BookingsScreen() {
 
       {/* Action Buttons */}
       <View className="flex-row">
-        {tabType === 'upcoming' && (
+        {showUpcomingButtons && (
           <>
             <TouchableOpacity
               className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl mr-2 border"
@@ -217,7 +244,7 @@ export default function BookingsScreen() {
           </>
         )}
 
-        {tabType === 'completed' && (
+        {showCompletedButtons && (
           <>
             <TouchableOpacity
               className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl mr-2"
@@ -238,7 +265,7 @@ export default function BookingsScreen() {
           </>
         )}
 
-        {tabType === 'cancelled' && (
+        {showCancelledButtons && (
           <TouchableOpacity
             className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl"
             style={{ backgroundColor: primaryColor }}
@@ -249,12 +276,14 @@ export default function BookingsScreen() {
         )}
       </View>
     </View>
-  );
+    );
+  };
 
   const currentBookings = 
     activeTab === 'upcoming' ? upcomingBookings :
     activeTab === 'completed' ? completedBookings :
-    cancelledBookings;
+    activeTab === 'cancelled' ? cancelledBookings :
+    getAllBookings();
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -262,40 +291,61 @@ export default function BookingsScreen() {
       <Header />
 
       {/* Tab Navigation */}
-      <View className="flex-row mx-5 mt-2 mb-4 bg-gray-100 rounded-xl p-1">
-        <TouchableOpacity
-          className={`flex-1 py-3 rounded-lg ${activeTab === 'upcoming' ? 'bg-white' : ''}`}
-          onPress={() => setActiveTab('upcoming')}
+      <View className="mx-5 mt-2 mb-4 bg-gray-100 rounded-xl p-1">
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 4 }}
         >
-          <Text
-            className={`text-center font-semibold ${activeTab === 'upcoming' ? '' : 'opacity-60'}`}
-            style={{ color: activeTab === 'upcoming' ? colors.text : colors.icon }}
+          <TouchableOpacity
+            className="px-4 py-3 rounded-lg mr-2"
+            style={{ backgroundColor: activeTab === 'all' ? colors.primary : 'transparent' }}
+            onPress={() => setActiveTab('all')}
           >
-            Upcoming
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          className={`flex-1 py-3 rounded-lg ${activeTab === 'completed' ? 'bg-white' : ''}`}
-          onPress={() => setActiveTab('completed')}
-        >
-          <Text
-            className={`text-center font-semibold ${activeTab === 'completed' ? '' : 'opacity-60'}`}
-            style={{ color: activeTab === 'completed' ? colors.text : colors.icon }}
+            <Text
+              className={`text-center font-semibold ${activeTab === 'all' ? '' : 'opacity-60'}`}
+              style={{ color: activeTab === 'all' ? 'white' : colors.icon }}
+            >
+              All
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="px-4 py-3 rounded-lg mr-2"
+            style={{ backgroundColor: activeTab === 'upcoming' ? colors.primary : 'transparent' }}
+            onPress={() => setActiveTab('upcoming')}
           >
-            Completed
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          className={`flex-1 py-3 rounded-lg ${activeTab === 'cancelled' ? 'bg-white' : ''}`}
-          onPress={() => setActiveTab('cancelled')}
-        >
-          <Text
-            className={`text-center font-semibold ${activeTab === 'cancelled' ? '' : 'opacity-60'}`}
-            style={{ color: activeTab === 'cancelled' ? colors.text : colors.icon }}
+            <Text
+              className={`text-center font-semibold ${activeTab === 'upcoming' ? '' : 'opacity-60'}`}
+              style={{ color: activeTab === 'upcoming' ? 'white' : colors.icon }}
+            >
+              Upcoming
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="px-4 py-3 rounded-lg mr-2"
+            style={{ backgroundColor: activeTab === 'completed' ? colors.primary : 'transparent' }}
+            onPress={() => setActiveTab('completed')}
           >
-            Cancelled
-          </Text>
-        </TouchableOpacity>
+            <Text
+              className={`text-center font-semibold ${activeTab === 'completed' ? '' : 'opacity-60'}`}
+              style={{ color: activeTab === 'completed' ? 'white' : colors.icon }}
+            >
+              Completed
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="px-4 py-3 rounded-lg"
+            style={{ backgroundColor: activeTab === 'cancelled' ? colors.primary : 'transparent' }}
+            onPress={() => setActiveTab('cancelled')}
+          >
+            <Text
+              className={`text-center font-semibold ${activeTab === 'cancelled' ? '' : 'opacity-60'}`}
+              style={{ color: activeTab === 'cancelled' ? 'white' : colors.icon }}
+            >
+              Cancelled
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
 
       {/* Bookings List */}
@@ -306,10 +356,10 @@ export default function BookingsScreen() {
           <View className="items-center justify-center py-20">
             <Ionicons name="calendar-outline" size={64} color={colors.icon} />
             <Text className="text-lg font-semibold mt-4" style={{ color: colors.text }}>
-              No {activeTab} bookings
+              {activeTab === 'all' ? 'No bookings' : `No ${activeTab} bookings`}
             </Text>
             <Text className="text-sm mt-2" style={{ color: colors.icon }}>
-              Your {activeTab} bookings will appear here
+              {activeTab === 'all' ? 'Your bookings will appear here' : `Your ${activeTab} bookings will appear here`}
             </Text>
           </View>
         )}
