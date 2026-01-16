@@ -5,7 +5,7 @@ export interface BookingDetails extends Booking {
   spaImage: any; // Image source (require() or URI)
   spaRating: number; // Float rating (e.g., 4.5)
   spaDetails: string; // Description/details about the spa
-  
+  address: string;
   // Location coordinates for map
   latitude: number;
   longitude: number;
@@ -16,5 +16,5 @@ export interface BookingDetails extends Booking {
   
   // Payment information
   bookingId: string;
-  paidBy: 'Cash' | 'E-Wallet';
+  paidAmount: number; // Downpayment amount (50% of total price)
 }

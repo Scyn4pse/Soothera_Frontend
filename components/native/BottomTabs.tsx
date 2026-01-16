@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, Platform } from 'react-native';
 import { Text } from '@/components/Text';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
@@ -29,11 +30,13 @@ export function BottomTabs({ activeTab, onTabPress }: BottomTabsProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const isDark = colorScheme === 'dark';
+  const insets = useSafeAreaInsets();
 
   return (
     <View
-      className={`flex-row bg-white dark:bg-[#151718] border-t border-gray-200 dark:border-[#2a2a2a] ${Platform.OS === 'ios' ? 'pb-5' : ''}`}
+      className="flex-row bg-white dark:bg-[#151718] border-t border-gray-200 dark:border-[#2a2a2a]"
       style={{
+        paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 20 : 16),
         elevation: 8,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: -2 },

@@ -9,7 +9,7 @@ export const bookingDetailsMap: Record<string, BookingDetails> = {
     serviceName: 'Aromatherapy Massage',
     spaName: 'Tranquil Oasis Spa',
     status: BOOKING_STATUS.CONFIRMED,
-    date: '05/27/2024',
+    date: '01/20/2026',
     time: '10:00 AM - 11:00 AM',
     address: 'Talamban, Cebu City',
     price: 150.00,
@@ -21,14 +21,14 @@ export const bookingDetailsMap: Record<string, BookingDetails> = {
     therapistName: 'Maria Santos',
     therapistTitle: 'Certified Massage Therapist',
     bookingId: 'BK-2024-001',
-    paidBy: 'E-Wallet',
+    paidAmount: 75.00, // 50% of 150.00
   },
   '2': {
     id: '2',
     serviceName: 'Deep Tissue Therapy',
     spaName: 'Urban Retreat',
     status: BOOKING_STATUS.PENDING,
-    date: '06/05/2024',
+    date: '01/25/2026',
     time: '02:00 PM - 03:30 PM',
     address: 'Mandaue City, Cebu',
     price: 180.00,
@@ -40,7 +40,7 @@ export const bookingDetailsMap: Record<string, BookingDetails> = {
     therapistName: 'John Dela Cruz',
     therapistTitle: 'Certified Massage Therapist',
     bookingId: 'BK-2024-002',
-    paidBy: 'Cash',
+    paidAmount: 90.00, // 50% of 180.00
   },
   '3': {
     id: '3',
@@ -59,7 +59,7 @@ export const bookingDetailsMap: Record<string, BookingDetails> = {
     therapistName: 'Anna Garcia',
     therapistTitle: 'Certified Massage Therapist',
     bookingId: 'BK-2024-003',
-    paidBy: 'E-Wallet',
+    paidAmount: 60.00, // 50% of 120.00
   },
   '4': {
     id: '4',
@@ -78,7 +78,7 @@ export const bookingDetailsMap: Record<string, BookingDetails> = {
     therapistName: 'Robert Tan',
     therapistTitle: 'Certified Massage Therapist',
     bookingId: 'BK-2024-004',
-    paidBy: 'Cash',
+    paidAmount: 47.50, // 50% of 95.00
   },
 };
 

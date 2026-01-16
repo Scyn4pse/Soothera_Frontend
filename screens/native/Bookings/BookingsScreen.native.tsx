@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { View, ScrollView, Dimensions } from 'react-native';
 import { Text } from '@/components/Text';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Header } from '@/components/native/Header';
+import { useConfirmation } from '@/components/native/ConfirmationModalContext';
 import { 
   Booking,
   allBookings,
@@ -25,6 +25,7 @@ interface BookingsScreenProps {
 export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreenProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { showConfirmation } = useConfirmation();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled' | 'all'>('all');
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   
@@ -54,11 +55,11 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
     setActiveTab(tab);
   };
 
-  // Get all bookings sorted by date (most recent first)
-  const getAllBookings = (): Booking[] => {
+  // Helper function to sort bookings by date (most recent first)
+  const sortBookingsByDate = (bookings: Booking[]): Booking[] => {
     // Sort by date (most recent first)
     // Date format is MM/DD/YYYY
-    return [...allBookings].sort((a, b) => {
+    return [...bookings].sort((a, b) => {
       const parseDate = (dateStr: string): Date => {
         const [month, day, year] = dateStr.split('/').map(Number);
         return new Date(year, month - 1, day);
@@ -70,6 +71,11 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
       // Most recent first (descending order)
       return dateB.getTime() - dateA.getTime();
     });
+  };
+
+  // Get all bookings sorted by date (most recent first)
+  const getAllBookings = (): Booking[] => {
+    return sortBookingsByDate(allBookings);
   };
 
   // Handle booking card press
@@ -100,6 +106,32 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
     console.log('Rebook:', selectedBookingId);
   };
 
+  // Handle reschedule (just a placeholder callback, modal is handled in BookingDetailsScreen)
+  const handleReschedule = () => {
+    // Modal is now handled in BookingDetailsScreen
+  };
+
+  // Handle cancel booking
+  const handleCancel = async () => {
+    if (!selectedBookingId) return;
+
+    const confirmed = await showConfirmation({
+      title: 'Cancel Booking',
+      message: 'Are you sure you want to cancel this booking? This action cannot be undone.',
+      confirmText: 'Cancel Booking',
+      cancelText: 'Keep Booking',
+      icon: 'warning-outline',
+      iconColor: '#EF4444',
+      confirmButtonColor: '#EF4444',
+    });
+
+    if (confirmed) {
+      // TODO: Implement cancel booking functionality
+      console.log('Cancel booking:', selectedBookingId);
+      // You can add your cancel booking logic here
+    }
+  };
+
   // If booking details not found, reset selection
   useEffect(() => {
     if (selectedBookingId) {
@@ -115,6 +147,35 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
     onDetailsScreenChange?.(selectedBookingId !== null);
   }, [selectedBookingId, onDetailsScreenChange]);
 
+  // Handle ScrollView layout to set initial position immediately
+  const handleScrollViewLayout = () => {
+    if (pageScrollViewRef.current) {
+      const tabIndex = tabs.indexOf(activeTab);
+      if (tabIndex >= 0) {
+        // Set scroll position immediately without animation
+        pageScrollViewRef.current.scrollTo({
+          x: tabIndex * screenWidth,
+          animated: false,
+        });
+      }
+    }
+  };
+
+  // Restore scroll position when returning from details screen (synchronously before paint)
+  useLayoutEffect(() => {
+    if (selectedBookingId === null && pageScrollViewRef.current) {
+      // Set scroll position immediately when returning from details
+      const tabIndex = tabs.indexOf(activeTab);
+      if (tabIndex >= 0) {
+        // Set position synchronously before paint to avoid flash
+        pageScrollViewRef.current.scrollTo({
+          x: tabIndex * screenWidth,
+          animated: false,
+        });
+      }
+    }
+  }, [selectedBookingId, activeTab, screenWidth]);
+
   // If a booking is selected, show details screen
   if (selectedBookingId) {
     const bookingDetails = getBookingDetails(selectedBookingId);
@@ -126,13 +187,15 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
           onRateSpa={handleRateSpa}
           onRateTherapist={handleRateTherapist}
           onRebook={handleRebook}
+          onReschedule={handleReschedule}
+          onCancel={handleCancel}
         />
       );
     }
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <View className="flex-1 bg-white">
       {/* Header Section */}
       <Header />
 
@@ -146,15 +209,19 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={handlePageScroll}
+        onLayout={handleScrollViewLayout}
         className="flex-1"
         decelerationRate="fast"
       >
         {tabs.map((tab) => {
-          const tabBookings = 
+          const filteredBookings = 
             tab === 'upcoming' ? getUpcomingBookings(allBookings) :
             tab === 'completed' ? getCompletedBookings(allBookings) :
             tab === 'cancelled' ? getCancelledBookings(allBookings) :
-            getAllBookings();
+            allBookings;
+          
+          // Sort all tab bookings by date (recent to old)
+          const tabBookings = sortBookingsByDate(filteredBookings);
 
           return (
             <ScrollView
@@ -187,6 +254,6 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
           );
         })}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

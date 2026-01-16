@@ -11,9 +11,8 @@ export const allBookings: Booking[] = [
     serviceName: 'Aromatherapy Massage',
     spaName: 'Tranquil Oasis Spa',
     status: BOOKING_STATUS.CONFIRMED, // 0
-    date: '05/27/2024',
+    date: '01/20/2026',
     time: '10:00 AM - 11:00 AM',
-    address: 'Talamban, Cebu City',
     price: 150.00,
   },
   {
@@ -21,9 +20,8 @@ export const allBookings: Booking[] = [
     serviceName: 'Deep Tissue Therapy',
     spaName: 'Urban Retreat',
     status: BOOKING_STATUS.PENDING, // 1
-    date: '06/05/2024',
+    date: '01/25/2026',
     time: '02:00 PM - 03:30 PM',
-    address: 'Mandaue City, Cebu',
     price: 180.00,
   },
   {
@@ -33,7 +31,6 @@ export const allBookings: Booking[] = [
     status: BOOKING_STATUS.COMPLETED, // 2
     date: '04/21/2024',
     time: '03:00 PM - 04:00 PM',
-    address: 'Talamban, Cebu City',
     price: 120.00,
   },
   {
@@ -43,7 +40,6 @@ export const allBookings: Booking[] = [
     status: BOOKING_STATUS.CANCELLED, // 3
     date: '03/12/2024',
     time: '11:30 AM - 12:30 PM',
-    address: 'Capitol Site, Cebu City',
     price: 95.00,
   },
 ];

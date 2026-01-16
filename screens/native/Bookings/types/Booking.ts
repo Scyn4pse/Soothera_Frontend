@@ -16,7 +16,6 @@ export interface Booking {
   status: number; // 0 = confirmed, 1 = pending, 2 = completed, 3 = cancelled
   date: string;
   time: string;
-  address: string;
   price: number;
 }
 

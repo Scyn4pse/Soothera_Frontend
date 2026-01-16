@@ -1,6 +1,5 @@
 import { View, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Text';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -50,7 +49,7 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-[#151718]">
+    <View className="flex-1 bg-white dark:bg-[#151718]">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Profile Header */}
         <View className="items-center py-6">
@@ -189,6 +188,6 @@ export default function ProfileScreen() {
           </ScrollView>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

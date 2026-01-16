@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomTabs } from '../components/native/BottomTabs';
 import HomeScreen from '../screens/native/Home/HomeScreen.native';
 import BookingsScreen from '../screens/native/Bookings/BookingsScreen.native';
@@ -30,7 +31,7 @@ function MainContent() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <View style={{ flex: 1 }}>
         {renderScreen()}
       </View>
@@ -42,7 +43,7 @@ function MainContent() {
         onTabPress={handleTabPress}
       />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
