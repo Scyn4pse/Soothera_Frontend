@@ -10,6 +10,7 @@ type TabId = 'home' | 'bookings' | 'profile';
 // Main content with bottom tab navigation
 function MainContent() {
   const [activeTab, setActiveTab] = useState<TabId>('home');
+  const [isDetailsScreenActive, setIsDetailsScreenActive] = useState(false);
 
   const handleTabPress = (tabId: TabId) => {
     setActiveTab(tabId);
@@ -20,7 +21,7 @@ function MainContent() {
       case 'home':
         return <HomeScreen />;
       case 'bookings':
-        return <BookingsScreen />;
+        return <BookingsScreen onDetailsScreenChange={setIsDetailsScreenActive} />;
       case 'profile':
         return <ProfileScreen />;
       default:
@@ -34,11 +35,13 @@ function MainContent() {
         {renderScreen()}
       </View>
 
-      {/* Bottom Tab Navigation */}
-      <BottomTabs
-        activeTab={activeTab}
-        onTabPress={handleTabPress}
-      />
+      {/* Bottom Tab Navigation - Hide when details screen is active */}
+      {!isDetailsScreenActive && (
+        <BottomTabs
+          activeTab={activeTab}
+          onTabPress={handleTabPress}
+        />
+      )}
     </View>
   );
 }

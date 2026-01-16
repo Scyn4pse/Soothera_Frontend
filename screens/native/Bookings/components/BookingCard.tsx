@@ -11,6 +11,7 @@ type TabType = 'upcoming' | 'completed' | 'cancelled' | 'all';
 interface BookingCardProps {
   booking: Booking;
   tabType: TabType;
+  onPress?: () => void;
 }
 
 const getStatusColor = (status: number, colors: any) => {
@@ -27,7 +28,7 @@ const getStatusColor = (status: number, colors: any) => {
   }
 };
 
-export default function BookingCard({ booking, tabType }: BookingCardProps) {
+export default function BookingCard({ booking, tabType, onPress }: BookingCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
@@ -38,7 +39,9 @@ export default function BookingCard({ booking, tabType }: BookingCardProps) {
   const showStatusTag = tabType === 'upcoming' || (tabType === 'all' && (booking.status === BOOKING_STATUS.CONFIRMED || booking.status === BOOKING_STATUS.PENDING || booking.status === BOOKING_STATUS.COMPLETED || booking.status === BOOKING_STATUS.CANCELLED));
 
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={onPress}
       className="bg-white rounded-2xl p-4 mb-4"
       style={{
         shadowColor: '#000',
@@ -168,6 +171,6 @@ export default function BookingCard({ booking, tabType }: BookingCardProps) {
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

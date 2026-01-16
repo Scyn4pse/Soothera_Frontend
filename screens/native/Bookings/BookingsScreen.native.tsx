@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, ScrollView, Dimensions } from 'react-native';
 import { Text } from '@/components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,11 +15,18 @@ import {
 } from './configs/mockBookingsData';
 import BookingCard from './components/BookingCard';
 import TabNavigation from './components/TabNavigation';
+import BookingDetailsScreen from './BookingDetailsScreen.native';
+import { getBookingDetails } from './configs/mockBookingDetailsData';
 
-export default function BookingsScreen() {
+interface BookingsScreenProps {
+  onDetailsScreenChange?: (isActive: boolean) => void;
+}
+
+export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreenProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled' | 'all'>('all');
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   
   // Tab order for paging (All is first)
   const tabs: Array<'all' | 'upcoming' | 'completed' | 'cancelled'> = ['all', 'upcoming', 'completed', 'cancelled'];
@@ -65,6 +72,65 @@ export default function BookingsScreen() {
     });
   };
 
+  // Handle booking card press
+  const handleBookingPress = (bookingId: string) => {
+    setSelectedBookingId(bookingId);
+  };
+
+  // Handle back from details screen
+  const handleBack = () => {
+    setSelectedBookingId(null);
+  };
+
+  // Handle rate spa
+  const handleRateSpa = () => {
+    // TODO: Implement rate spa functionality
+    console.log('Rate spa:', selectedBookingId);
+  };
+
+  // Handle rate therapist
+  const handleRateTherapist = () => {
+    // TODO: Implement rate therapist functionality
+    console.log('Rate therapist:', selectedBookingId);
+  };
+
+  // Handle rebook
+  const handleRebook = () => {
+    // TODO: Implement rebook functionality
+    console.log('Rebook:', selectedBookingId);
+  };
+
+  // If booking details not found, reset selection
+  useEffect(() => {
+    if (selectedBookingId) {
+      const bookingDetails = getBookingDetails(selectedBookingId);
+      if (!bookingDetails) {
+        setSelectedBookingId(null);
+      }
+    }
+  }, [selectedBookingId]);
+
+  // Notify parent when details screen is shown/hidden
+  useEffect(() => {
+    onDetailsScreenChange?.(selectedBookingId !== null);
+  }, [selectedBookingId, onDetailsScreenChange]);
+
+  // If a booking is selected, show details screen
+  if (selectedBookingId) {
+    const bookingDetails = getBookingDetails(selectedBookingId);
+    if (bookingDetails) {
+      return (
+        <BookingDetailsScreen
+          bookingDetails={bookingDetails}
+          onBack={handleBack}
+          onRateSpa={handleRateSpa}
+          onRateTherapist={handleRateTherapist}
+          onRebook={handleRebook}
+        />
+      );
+    }
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header Section */}
@@ -99,7 +165,12 @@ export default function BookingsScreen() {
             >
               {tabBookings.length > 0 ? (
                 tabBookings.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} tabType={tab} />
+                  <BookingCard 
+                    key={booking.id} 
+                    booking={booking} 
+                    tabType={tab}
+                    onPress={() => handleBookingPress(booking.id)}
+                  />
                 ))
               ) : (
                 <View className="items-center justify-center py-20">
