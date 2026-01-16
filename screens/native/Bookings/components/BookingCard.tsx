@@ -52,7 +52,7 @@ export default function BookingCard({ booking, tabType, onPress }: BookingCardPr
       }}
     >
       {/* Top Section: Image and Details */}
-      <View className="flex-row mb-4">
+      <View className="flex-row">
         {/* Image */}
         <Image
           source={require('../../../../assets/salon.jpg')}
@@ -64,7 +64,12 @@ export default function BookingCard({ booking, tabType, onPress }: BookingCardPr
         <View className="flex-1">
           {/* Service Name and Status */}
           <View className="flex-row items-start justify-between mb-1">
-            <Text className="text-lg font-bold flex-1" style={{ color: colors.text }}>
+            <Text 
+              className="text-lg font-bold flex-1" 
+              style={{ color: colors.text }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {booking.serviceName}
             </Text>
             {showStatusTag && (
@@ -100,13 +105,6 @@ export default function BookingCard({ booking, tabType, onPress }: BookingCardPr
             </Text>
           </View>
 
-          {/* Location/Address */}
-          <View className="flex-row items-start">
-            <Ionicons name="location-outline" size={14} color={colors.icon} style={{ marginTop: 2 }} />
-            <Text className="text-xs ml-1 flex-1" style={{ color: colors.icon }} numberOfLines={1}>
-              {booking.address}
-            </Text>
-          </View>
         </View>
       </View>
 
