@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { BottomTabs } from '../components/native/BottomTabs';
-import HomeScreen from '../screens/native/HomeScreen.native';
-import BookingsScreen from '../screens/native/BookingsScreen.native';
-import ProfileScreen from '../screens/native/ProfileScreen.native';
+import HomeScreen from '../screens/native/Home/HomeScreen.native';
+import BookingsScreen from '../screens/native/Bookings/BookingsScreen.native';
+import ProfileScreen from '../screens/native/Profile/ProfileScreen.native';
 
 type TabId = 'home' | 'bookings' | 'profile';
 

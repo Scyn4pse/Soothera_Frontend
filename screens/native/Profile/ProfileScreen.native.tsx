@@ -36,17 +36,17 @@ export default function ProfileScreen() {
 
   // Mock data for recommended salons
   const recommendedSalons = [
-    { id: '1', name: 'Salon Elite', rating: 4.8, location: 'Talamban, Cebu', image: require('../../assets/salon.jpg') },
-    { id: '2', name: 'Beauty Haven', rating: 4.9, location: 'Banilad, Cebu', image: require('../../assets/salon.jpg') },
-    { id: '3', name: 'Style Studio', rating: 4.7, location: 'Mandaue City, Cebu', image: require('../../assets/salon.jpg') },
-    { id: '4', name: 'Glamour House', rating: 4.8, location: 'Lapu-Lapu City, Cebu', image: require('../../assets/salon.jpg') },
+    { id: '1', name: 'Salon Elite', rating: 4.8, location: 'Talamban, Cebu', image: require('../../../assets/salon.jpg') },
+    { id: '2', name: 'Beauty Haven', rating: 4.9, location: 'Banilad, Cebu', image: require('../../../assets/salon.jpg') },
+    { id: '3', name: 'Style Studio', rating: 4.7, location: 'Mandaue City, Cebu', image: require('../../../assets/salon.jpg') },
+    { id: '4', name: 'Glamour House', rating: 4.8, location: 'Lapu-Lapu City, Cebu', image: require('../../../assets/salon.jpg') },
   ];
 
   // Mock data for favorite salons
   const favoriteSalons = [
-    { id: '1', name: 'Luxury Spa', rating: 4.9, location: 'Cebu City, Cebu', image: require('../../assets/salon.jpg') },
-    { id: '2', name: 'Relaxation Center', rating: 4.8, location: 'Mactan, Cebu', image: require('../../assets/salon.jpg') },
-    { id: '3', name: 'Wellness Studio', rating: 4.7, location: 'IT Park, Cebu', image: require('../../assets/salon.jpg') },
+    { id: '1', name: 'Luxury Spa', rating: 4.9, location: 'Cebu City, Cebu', image: require('../../../assets/salon.jpg') },
+    { id: '2', name: 'Relaxation Center', rating: 4.8, location: 'Mactan, Cebu', image: require('../../../assets/salon.jpg') },
+    { id: '3', name: 'Wellness Studio', rating: 4.7, location: 'IT Park, Cebu', image: require('../../../assets/salon.jpg') },
   ];
 
   return (

@@ -21,19 +21,19 @@ export default function HomeScreen() {
 
   // Mock data for services
   const services = [
-    { id: '1', name: 'Filipino', image: require('../../assets/home-massage-spain.jpg') },
-    { id: '2', name: 'Swedish', image: require('../../assets/home-massage-spain.jpg') },
-    { id: '3', name: 'Shiatsu', image: require('../../assets/home-massage-spain.jpg') },
-    { id: '4', name: 'Thai', image: require('../../assets/home-massage-spain.jpg') },
-    { id: '5', name: 'Aromatherapy', image: require('../../assets/home-massage-spain.jpg') },
+    { id: '1', name: 'Filipino', image: require('../../../assets/home-massage-spain.jpg') },
+    { id: '2', name: 'Swedish', image: require('../../../assets/home-massage-spain.jpg') },
+    { id: '3', name: 'Shiatsu', image: require('../../../assets/home-massage-spain.jpg') },
+    { id: '4', name: 'Thai', image: require('../../../assets/home-massage-spain.jpg') },
+    { id: '5', name: 'Aromatherapy', image: require('../../../assets/home-massage-spain.jpg') },
   ];
 
   // Mock data for top rated salons
   const topRatedSalons = [
-    { id: '1', name: 'Salon Elite', rating: 4.8, location: 'Talamban, Cebu', image: require('../../assets/salon.jpg') },
-    { id: '2', name: 'Beauty Haven', rating: 4.9, location: 'Banilad, Cebu', image: require('../../assets/salon.jpg') },
-    { id: '3', name: 'Style Studio', rating: 4.7, location: 'Mandaue City, Cebu', image: require('../../assets/salon.jpg') },
-    { id: '4', name: 'Glamour House', rating: 4.8, location: 'Lapu-Lapu City, Cebu', image: require('../../assets/salon.jpg') },
+    { id: '1', name: 'Salon Elite', rating: 4.8, location: 'Talamban, Cebu', image: require('../../../assets/salon.jpg') },
+    { id: '2', name: 'Beauty Haven', rating: 4.9, location: 'Banilad, Cebu', image: require('../../../assets/salon.jpg') },
+    { id: '3', name: 'Style Studio', rating: 4.7, location: 'Mandaue City, Cebu', image: require('../../../assets/salon.jpg') },
+    { id: '4', name: 'Glamour House', rating: 4.8, location: 'Lapu-Lapu City, Cebu', image: require('../../../assets/salon.jpg') },
   ];
 
   return (
