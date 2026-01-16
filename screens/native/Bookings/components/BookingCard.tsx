@@ -12,6 +12,7 @@ interface BookingCardProps {
   booking: Booking;
   tabType: TabType;
   onPress?: () => void;
+  onReview?: (bookingId: string) => void;
 }
 
 const getStatusColor = (status: number, colors: any) => {
@@ -28,7 +29,7 @@ const getStatusColor = (status: number, colors: any) => {
   }
 };
 
-export default function BookingCard({ booking, tabType, onPress }: BookingCardProps) {
+export default function BookingCard({ booking, tabType, onPress, onReview }: BookingCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
@@ -150,6 +151,10 @@ export default function BookingCard({ booking, tabType, onPress }: BookingCardPr
             <TouchableOpacity
               className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl border"
               style={{ borderColor: colors.icon, backgroundColor: 'white' }}
+              onPress={(e) => {
+                e.stopPropagation();
+                onReview?.(booking.id);
+              }}
             >
               <Ionicons name="star-outline" size={16} color={colors.text} />
               <Text className="text-sm font-semibold ml-2" style={{ color: colors.text }}>

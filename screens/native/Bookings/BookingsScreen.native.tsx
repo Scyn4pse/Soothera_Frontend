@@ -16,6 +16,9 @@ import {
 import BookingCard from './components/BookingCard';
 import TabNavigation from './components/TabNavigation';
 import BookingDetailsScreen from './BookingDetailsScreen.native';
+import RatingSpaScreen from './RatingSpaScreen.native';
+import RatingTherapistScreen from './RatingTherapistScreen.native';
+import ReviewChoiceModal from './components/ReviewChoiceModal';
 import { getBookingDetails } from './configs/mockBookingDetailsData';
 
 interface BookingsScreenProps {
@@ -28,6 +31,13 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
   const { showConfirmation } = useConfirmation();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled' | 'all'>('all');
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  const [showRatingScreen, setShowRatingScreen] = useState(false);
+  const [ratingBookingId, setRatingBookingId] = useState<string | null>(null);
+  const [showTherapistRatingScreen, setShowTherapistRatingScreen] = useState(false);
+  const [therapistRatingBookingId, setTherapistRatingBookingId] = useState<string | null>(null);
+  const [showReviewChoiceModal, setShowReviewChoiceModal] = useState(false);
+  const [reviewBookingId, setReviewBookingId] = useState<string | null>(null);
+  const [isFromReviewButton, setIsFromReviewButton] = useState(false);
   
   // Tab order for paging (All is first)
   const tabs: Array<'all' | 'upcoming' | 'completed' | 'cancelled'> = ['all', 'upcoming', 'completed', 'cancelled'];
@@ -90,14 +100,82 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
 
   // Handle rate spa
   const handleRateSpa = () => {
-    // TODO: Implement rate spa functionality
-    console.log('Rate spa:', selectedBookingId);
+    if (selectedBookingId) {
+      setRatingBookingId(selectedBookingId);
+      setShowRatingScreen(true);
+      setIsFromReviewButton(false); // Coming from BookingDetailsScreen
+    }
+  };
+
+  // Handle back from rating screen
+  const handleBackFromRating = () => {
+    setShowRatingScreen(false);
+    setRatingBookingId(null);
+    setIsFromReviewButton(false); // Reset flag
+  };
+
+  // Handle submit rating
+  const handleSubmitRating = async (rating: number, review: string) => {
+    // TODO: Implement API call to submit rating
+    console.log('Submit rating:', ratingBookingId, rating, review);
+    // After successful submission, the screen will navigate back automatically
   };
 
   // Handle rate therapist
   const handleRateTherapist = () => {
-    // TODO: Implement rate therapist functionality
-    console.log('Rate therapist:', selectedBookingId);
+    if (selectedBookingId) {
+      setTherapistRatingBookingId(selectedBookingId);
+      setShowTherapistRatingScreen(true);
+      setIsFromReviewButton(false); // Coming from BookingDetailsScreen
+    }
+  };
+
+  // Handle back from therapist rating screen
+  const handleBackFromTherapistRating = () => {
+    setShowTherapistRatingScreen(false);
+    setTherapistRatingBookingId(null);
+    setIsFromReviewButton(false); // Reset flag
+  };
+
+  // Handle review button press from BookingCard
+  const handleReviewPress = (bookingId: string) => {
+    setReviewBookingId(bookingId);
+    setShowReviewChoiceModal(true);
+  };
+
+  // Handle choose spa from review modal
+  const handleChooseSpa = () => {
+    if (reviewBookingId) {
+      setShowReviewChoiceModal(false);
+      setRatingBookingId(reviewBookingId);
+      setShowRatingScreen(true);
+      setIsFromReviewButton(true); // Track that we came from review button
+      setReviewBookingId(null);
+    }
+  };
+
+  // Handle choose therapist from review modal
+  const handleChooseTherapist = () => {
+    if (reviewBookingId) {
+      setShowReviewChoiceModal(false);
+      setTherapistRatingBookingId(reviewBookingId);
+      setShowTherapistRatingScreen(true);
+      setIsFromReviewButton(true); // Track that we came from review button
+      setReviewBookingId(null);
+    }
+  };
+
+  // Handle cancel review modal
+  const handleCancelReviewModal = () => {
+    setShowReviewChoiceModal(false);
+    setReviewBookingId(null);
+  };
+
+  // Handle submit therapist rating
+  const handleSubmitTherapistRating = async (rating: number, review: string) => {
+    // TODO: Implement API call to submit therapist rating
+    console.log('Submit therapist rating:', therapistRatingBookingId, rating, review);
+    // After successful submission, the screen will navigate back automatically
   };
 
   // Handle rebook
@@ -144,8 +222,8 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
 
   // Notify parent when details screen is shown/hidden
   useEffect(() => {
-    onDetailsScreenChange?.(selectedBookingId !== null);
-  }, [selectedBookingId, onDetailsScreenChange]);
+    onDetailsScreenChange?.(selectedBookingId !== null || showRatingScreen || showTherapistRatingScreen);
+  }, [selectedBookingId, showRatingScreen, showTherapistRatingScreen, onDetailsScreenChange]);
 
   // Handle ScrollView layout to set initial position immediately
   const handleScrollViewLayout = () => {
@@ -175,6 +253,34 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
       }
     }
   }, [selectedBookingId, activeTab, screenWidth]);
+
+  // If therapist rating screen is active, show therapist rating screen
+  if (showTherapistRatingScreen && therapistRatingBookingId) {
+    const bookingDetails = getBookingDetails(therapistRatingBookingId);
+    if (bookingDetails) {
+      return (
+        <RatingTherapistScreen
+          bookingDetails={bookingDetails}
+          onBack={handleBackFromTherapistRating}
+          onSubmit={handleSubmitTherapistRating}
+        />
+      );
+    }
+  }
+
+  // If rating screen is active, show rating screen
+  if (showRatingScreen && ratingBookingId) {
+    const bookingDetails = getBookingDetails(ratingBookingId);
+    if (bookingDetails) {
+      return (
+        <RatingSpaScreen
+          bookingDetails={bookingDetails}
+          onBack={handleBackFromRating}
+          onSubmit={handleSubmitRating}
+        />
+      );
+    }
+  }
 
   // If a booking is selected, show details screen
   if (selectedBookingId) {
@@ -237,6 +343,7 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
                     booking={booking} 
                     tabType={tab}
                     onPress={() => handleBookingPress(booking.id)}
+                    onReview={handleReviewPress}
                   />
                 ))
               ) : (
@@ -254,6 +361,14 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
           );
         })}
       </ScrollView>
+
+      {/* Review Choice Modal */}
+      <ReviewChoiceModal
+        visible={showReviewChoiceModal}
+        onChooseSpa={handleChooseSpa}
+        onChooseTherapist={handleChooseTherapist}
+        onCancel={handleCancelReviewModal}
+      />
     </View>
   );
 }
