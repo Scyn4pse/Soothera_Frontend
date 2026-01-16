@@ -260,6 +260,7 @@ export default function BookingDetailsScreen({
   const isCancelled = bookingDetails.status === BOOKING_STATUS.CANCELLED;
   const insets = useSafeAreaInsets();
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   // Handle Get Directions
   const handleGetDirections = async () => {
@@ -399,11 +400,16 @@ export default function BookingDetailsScreen({
               elevation: 5,
             }}
             onPress={() => {
+              setIsFavorited(!isFavorited);
               // TODO: Implement add to favorites functionality
-              console.log('Add to favorites:', bookingDetails.id);
+              console.log('Toggle favorite:', bookingDetails.id, !isFavorited);
             }}
           >
-            <Ionicons name="heart-outline" size={24} color={primaryColor} />
+            <Ionicons 
+              name={isFavorited ? "heart" : "heart-outline"} 
+              size={24} 
+              color={primaryColor} 
+            />
           </TouchableOpacity>
         </View>
 
