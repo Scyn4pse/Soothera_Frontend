@@ -41,6 +41,7 @@ interface HomeScreenProps {
 export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScreenChange, onSalonDetailsScreenChange, onBookAppointmentScreenChange, onNotificationsScreenChange, onNavigateToProfile }: HomeScreenProps = {}) {
   const [showServicesScreen, setShowServicesScreen] = useState(false);
   const [showTopRatedSalonsScreen, setShowTopRatedSalonsScreen] = useState(false);
+  const [autoOpenFilterModal, setAutoOpenFilterModal] = useState(false);
   const [selectedSalonId, setSelectedSalonId] = useState<string | null>(null);
   const [showBookAppointmentScreen, setShowBookAppointmentScreen] = useState(false);
   const [showPaymentSuccessfulScreen, setShowPaymentSuccessfulScreen] = useState(false);
@@ -197,8 +198,12 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
   if (showTopRatedSalonsScreen) {
     return (
       <TopRatedSalonsScreen 
-        onBack={() => setShowTopRatedSalonsScreen(false)}
+        onBack={() => {
+          setShowTopRatedSalonsScreen(false);
+          setAutoOpenFilterModal(false);
+        }}
         onSalonPress={handleSalonPress}
+        autoOpenFilter={autoOpenFilterModal}
       />
     );
   }
@@ -218,7 +223,13 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
         />
 
         {/* Search Bar and Filter */}
-        <SearchBar />
+        <SearchBar 
+          onPress={() => setShowTopRatedSalonsScreen(true)} 
+          onFilterPress={() => {
+            setAutoOpenFilterModal(true);
+            setShowTopRatedSalonsScreen(true);
+          }}
+        />
 
         {/* Special Deals Section */}
         <SpecialDeals />
