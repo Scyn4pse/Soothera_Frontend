@@ -12,6 +12,7 @@ type TabId = 'home' | 'bookings' | 'profile';
 function MainContent() {
   const [activeTab, setActiveTab] = useState<TabId>('home');
   const [isDetailsScreenActive, setIsDetailsScreenActive] = useState(false);
+  const [isServicesScreenActive, setIsServicesScreenActive] = useState(false);
 
   const handleTabPress = (tabId: TabId) => {
     setActiveTab(tabId);
@@ -20,13 +21,13 @@ function MainContent() {
   const renderScreen = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeScreen />;
+        return <HomeScreen onServicesScreenChange={setIsServicesScreenActive} />;
       case 'bookings':
         return <BookingsScreen onDetailsScreenChange={setIsDetailsScreenActive} />;
       case 'profile':
         return <ProfileScreen />;
       default:
-        return <HomeScreen />;
+        return <HomeScreen onServicesScreenChange={setIsServicesScreenActive} />;
     }
   };
 
@@ -36,8 +37,8 @@ function MainContent() {
         {renderScreen()}
       </View>
 
-      {/* Bottom Tab Navigation - Hide when details screen is active */}
-      {!isDetailsScreenActive && (
+      {/* Bottom Tab Navigation - Hide when details screen or services screen is active */}
+      {!isDetailsScreenActive && !isServicesScreenActive && (
       <BottomTabs
         activeTab={activeTab}
         onTabPress={handleTabPress}

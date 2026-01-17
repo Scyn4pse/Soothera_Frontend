@@ -20,7 +20,6 @@ export default function ReviewChoiceModal({
 }: ReviewChoiceModalProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const isDark = colorScheme === 'dark';
 
   return (
     <Modal
@@ -33,9 +32,7 @@ export default function ReviewChoiceModal({
         <View className="flex-1 bg-black/50 justify-center items-center p-5">
           <TouchableWithoutFeedback>
             <View
-              className={`rounded-2xl p-6 w-full max-w-sm ${
-                isDark ? 'bg-[#1f1f1f]' : 'bg-white'
-              }`}
+              className="rounded-2xl p-8 w-full max-w-sm bg-white"
               style={{
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 4 },
@@ -46,79 +43,58 @@ export default function ReviewChoiceModal({
             >
               {/* Title */}
               <Text
-                className="text-xl font-semibold mb-6 text-center"
+                className="text-base font-medium mb-8 text-center"
                 style={{ color: colors.text }}
               >
-                Choose What to Review
+                How was it? Please rate our service.
               </Text>
 
-              {/* Spa Option */}
-              <TouchableOpacity
-                className={`flex-row items-center p-4 rounded-xl mb-3 border ${
-                  isDark ? 'border-[#3a3a3a]' : 'border-gray-200'
-                }`}
-                style={{ backgroundColor: isDark ? '#2a2a2a' : '#F9FAFB' }}
-                onPress={onChooseSpa}
-                activeOpacity={0.7}
-              >
-                <View
-                  className="w-12 h-12 rounded-full items-center justify-center mr-3"
-                  style={{ backgroundColor: `${primaryColor}20` }}
+              {/* Circular Buttons Container */}
+              <View className="flex-row justify-center items-center mb-2" style={{ gap: 32 }}>
+                {/* Rate Spa Button */}
+                <TouchableOpacity
+                  className="items-center"
+                  onPress={onChooseSpa}
+                  activeOpacity={0.7}
                 >
-                  <Ionicons name="business-outline" size={24} color={primaryColor} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-semibold mb-1" style={{ color: colors.text }}>
-                    Review Spa
+                  <View
+                    className="w-20 h-20 rounded-full items-center justify-center border-2"
+                    style={{
+                      borderColor: '#E5E7EB',
+                    }}
+                  >
+                    <Ionicons name="business-outline" size={32} color={primaryColor} />
+                  </View>
+                  <Text
+                    className="text-sm font-medium mt-3 text-center"
+                    style={{ color: colors.text }}
+                  >
+                    Rate Spa
                   </Text>
-                  <Text className="text-sm" style={{ color: colors.icon }}>
-                    Rate your experience with the spa
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.icon} />
-              </TouchableOpacity>
+                </TouchableOpacity>
 
-              {/* Therapist Option */}
-              <TouchableOpacity
-                className={`flex-row items-center p-4 rounded-xl mb-6 border ${
-                  isDark ? 'border-[#3a3a3a]' : 'border-gray-200'
-                }`}
-                style={{ backgroundColor: isDark ? '#2a2a2a' : '#F9FAFB' }}
-                onPress={onChooseTherapist}
-                activeOpacity={0.7}
-              >
-                <View
-                  className="w-12 h-12 rounded-full items-center justify-center mr-3"
-                  style={{ backgroundColor: `${primaryColor}20` }}
+                {/* Rate Therapist Button */}
+                <TouchableOpacity
+                  className="items-center"
+                  onPress={onChooseTherapist}
+                  activeOpacity={0.7}
                 >
-                  <Ionicons name="person-outline" size={24} color={primaryColor} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-semibold mb-1" style={{ color: colors.text }}>
-                    Review Therapist
+                  <View
+                    className="w-20 h-20 rounded-full items-center justify-center border-2"
+                    style={{
+                      borderColor: '#E5E7EB',
+                    }}
+                  >
+                    <Ionicons name="person-outline" size={32} color={primaryColor} />
+                  </View>
+                  <Text
+                    className="text-sm font-medium mt-3 text-center"
+                    style={{ color: colors.text }}
+                  >
+                    Rate Therapist
                   </Text>
-                  <Text className="text-sm" style={{ color: colors.icon }}>
-                    Rate your experience with the therapist
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.icon} />
-              </TouchableOpacity>
-
-              {/* Cancel Button */}
-              <TouchableOpacity
-                className={`border rounded-xl py-3.5 ${
-                  isDark ? 'border-[#3a3a3a]' : 'border-gray-300'
-                }`}
-                onPress={onCancel}
-                activeOpacity={0.7}
-              >
-                <Text
-                  className="font-semibold text-center"
-                  style={{ color: colors.text }}
-                >
-                  Cancel
-                </Text>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </View>
             </View>
           </TouchableWithoutFeedback>
         </View>
