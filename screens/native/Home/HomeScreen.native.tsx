@@ -10,6 +10,7 @@ import TopRatedSalonsScreen from './TopRatedSalonsScreen.native';
 import SalonDetailsScreen from './SalonDetailsScreen.native';
 import BookAppointmentScreen from './BookAppointmentScreen.native';
 import PaymentSuccessfulScreen from './PaymentSuccessfulScreen.native';
+import PaymentFailedScreen from './PaymentFailedScreen.native';
 import { getSalonDetails } from './configs/mockData';
 import { Service } from './types/Home';
 import { SalonDetails, Therapist } from './types/SalonDetails';
@@ -40,6 +41,7 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
   const [selectedSalonId, setSelectedSalonId] = useState<string | null>(null);
   const [showBookAppointmentScreen, setShowBookAppointmentScreen] = useState(false);
   const [showPaymentSuccessfulScreen, setShowPaymentSuccessfulScreen] = useState(false);
+  const [showPaymentFailedScreen, setShowPaymentFailedScreen] = useState(false);
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
 
   // Notify parent when services screen state changes
@@ -97,12 +99,38 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
     setBookingData(null);
   };
 
-  // Handle home from payment successful screen
+  // Handle home from payment successful screen - temporarily navigate to payment failed screen
   const handleHomeFromPaymentSuccessful = () => {
     setShowPaymentSuccessfulScreen(false);
-    setBookingData(null);
-    setSelectedSalonId(null);
+    setShowPaymentFailedScreen(true);
+    // Keep bookingData for the failed screen
   };
+
+  // Handle back from payment failed screen
+  const handleBackFromPaymentFailed = () => {
+    setShowPaymentFailedScreen(false);
+    setBookingData(null);
+  };
+
+  // Handle try again from payment failed screen
+  const handleTryAgainFromPaymentFailed = () => {
+    setShowPaymentFailedScreen(false);
+    // Navigate back to booking screen
+    if (selectedSalonId) {
+      setShowBookAppointmentScreen(true);
+    }
+  };
+
+  // If payment failed screen is active, show payment failed screen
+  if (showPaymentFailedScreen && bookingData) {
+    return (
+      <PaymentFailedScreen
+        bookingData={bookingData}
+        onBack={handleBackFromPaymentFailed}
+        onTryAgain={handleTryAgainFromPaymentFailed}
+      />
+    );
+  }
 
   // If payment successful screen is active, show payment successful screen
   if (showPaymentSuccessfulScreen && bookingData) {
