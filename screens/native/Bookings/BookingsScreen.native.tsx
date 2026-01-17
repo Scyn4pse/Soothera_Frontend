@@ -23,9 +23,10 @@ import { getBookingDetails } from './configs/mockBookingDetailsData';
 
 interface BookingsScreenProps {
   onDetailsScreenChange?: (isActive: boolean) => void;
+  onNavigateToProfile?: () => void;
 }
 
-export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreenProps = {}) {
+export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProfile }: BookingsScreenProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { showConfirmation } = useConfirmation();
@@ -303,7 +304,7 @@ export default function BookingsScreen({ onDetailsScreenChange }: BookingsScreen
   return (
     <View className="flex-1 bg-white">
       {/* Header Section */}
-      <Header />
+      <Header onProfilePress={onNavigateToProfile} />
 
       {/* Tab Navigation */}
       <TabNavigation activeTab={activeTab} onTabPress={handleTabPress} />

@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { View, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,6 +33,12 @@ function SettingItem({ icon, label, onPress, colors, textColor, iconColor }: Set
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const [imageError, setImageError] = useState(false);
+  
+  // User data
+  const userName = 'User Profile';
+  const userEmail = 'profile@soothera.com';
+  const profileImage = require('../../../assets/pfp.png');
 
   // Mock data for recommended salons
   const recommendedSalons = [
@@ -54,16 +61,27 @@ export default function ProfileScreen() {
         {/* Profile Header */}
         <View className="items-center py-6">
           <View
-            className="w-[100px] h-[100px] rounded-full justify-center items-center mb-4"
+            className="w-[100px] h-[100px] rounded-full justify-center items-center mb-4 overflow-hidden"
             style={{ backgroundColor: colors.primary }}
           >
-            <Text className="text-[40px] font-bold text-white">U</Text>
+            {!imageError ? (
+              <Image
+                source={profileImage}
+                className="w-full h-full"
+                resizeMode="cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <Text className="text-[40px] font-bold text-white">
+                {userName.charAt(0).toUpperCase()}
+              </Text>
+            )}
           </View>
           <Text className="text-[28px] font-bold mb-1 dark:text-[#ECEDEE]" style={{ color: colors.text }}>
-            User Profile
+            {userName}
           </Text>
           <Text className="text-base dark:text-[#9BA1A6]" style={{ color: colors.icon }}>
-            profile@soothera.com
+            {userEmail}
           </Text>
         </View>
 

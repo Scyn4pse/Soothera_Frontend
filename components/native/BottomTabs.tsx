@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
 
-type TabId = 'home' | 'bookings' | 'profile';
+type TabId = 'home' | 'bookings' | 'messaging' | 'profile';
 
 interface BottomTabsProps {
   activeTab: TabId;
@@ -23,6 +23,7 @@ interface TabConfig {
 const tabs: TabConfig[] = [
   { id: 'home', label: 'Home', icon: 'home', iconOutline: 'home-outline' },
   { id: 'bookings', label: 'Bookings', icon: 'calendar', iconOutline: 'calendar-outline' },
+  { id: 'messaging', label: 'Messages', icon: 'chatbubbles', iconOutline: 'chatbubbles-outline' },
   { id: 'profile', label: 'Profile', icon: 'person', iconOutline: 'person-outline' },
 ];
 

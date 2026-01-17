@@ -11,6 +11,7 @@ import SalonDetailsScreen from './SalonDetailsScreen.native';
 import BookAppointmentScreen from './BookAppointmentScreen.native';
 import PaymentSuccessfulScreen from './PaymentSuccessfulScreen.native';
 import PaymentFailedScreen from './PaymentFailedScreen.native';
+import NotificationsScreen from '../Notifications/NotificationsScreen.native';
 import { getSalonDetails } from './configs/mockData';
 import { Service } from './types/Home';
 import { SalonDetails, Therapist } from './types/SalonDetails';
@@ -33,15 +34,18 @@ interface HomeScreenProps {
   onTopRatedSalonsScreenChange?: (isActive: boolean) => void;
   onSalonDetailsScreenChange?: (isActive: boolean) => void;
   onBookAppointmentScreenChange?: (isActive: boolean) => void;
+  onNotificationsScreenChange?: (isActive: boolean) => void;
+  onNavigateToProfile?: () => void;
 }
 
-export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScreenChange, onSalonDetailsScreenChange, onBookAppointmentScreenChange }: HomeScreenProps = {}) {
+export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScreenChange, onSalonDetailsScreenChange, onBookAppointmentScreenChange, onNotificationsScreenChange, onNavigateToProfile }: HomeScreenProps = {}) {
   const [showServicesScreen, setShowServicesScreen] = useState(false);
   const [showTopRatedSalonsScreen, setShowTopRatedSalonsScreen] = useState(false);
   const [selectedSalonId, setSelectedSalonId] = useState<string | null>(null);
   const [showBookAppointmentScreen, setShowBookAppointmentScreen] = useState(false);
   const [showPaymentSuccessfulScreen, setShowPaymentSuccessfulScreen] = useState(false);
   const [showPaymentFailedScreen, setShowPaymentFailedScreen] = useState(false);
+  const [showNotificationsScreen, setShowNotificationsScreen] = useState(false);
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
 
   // Notify parent when services screen state changes
@@ -63,6 +67,11 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
   useEffect(() => {
     onBookAppointmentScreenChange?.(showBookAppointmentScreen);
   }, [showBookAppointmentScreen, onBookAppointmentScreenChange]);
+
+  // Notify parent when notifications screen state changes
+  useEffect(() => {
+    onNotificationsScreenChange?.(showNotificationsScreen);
+  }, [showNotificationsScreen, onNotificationsScreenChange]);
 
   // Handle salon press
   const handleSalonPress = (salonId: string) => {
@@ -119,6 +128,11 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
     if (selectedSalonId) {
       setShowBookAppointmentScreen(true);
     }
+  };
+
+  // Handle back from notifications screen
+  const handleBackFromNotifications = () => {
+    setShowNotificationsScreen(false);
   };
 
   // If payment failed screen is active, show payment failed screen
@@ -189,11 +203,19 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
     );
   }
 
+  // If notifications screen is active, show notifications screen
+  if (showNotificationsScreen) {
+    return <NotificationsScreen onBack={handleBackFromNotifications} />;
+  }
+
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header Section */}
-        <Header />
+        <Header 
+          onProfilePress={onNavigateToProfile}
+          onNotificationPress={() => setShowNotificationsScreen(true)}
+        />
 
         {/* Search Bar and Filter */}
         <SearchBar />
