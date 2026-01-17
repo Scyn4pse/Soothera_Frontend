@@ -11,43 +11,91 @@ export const specialDeals: SpecialDeal[] = [
 export const services: Service[] = [
   { 
     id: '1', 
-    name: 'Filipino Massage', 
+    name: 'Hilot', 
     image: require('../../../../assets/home-massage-spain.jpg'),
-    price: 1200,
-    description: 'Traditional Filipino massage technique using deep pressure and stretching',
-    duration: ['60 mins', '90 mins', '120 mins']
-  },
-  { 
-    id: '2', 
-    name: 'Swedish Massage', 
-    image: require('../../../../assets/home-massage-spain.jpg'),
-    price: 1500,
-    description: 'Gentle, relaxing massage with long, flowing strokes',
+    price: 200,
+    description: 'Traditional Filipino healing massage using warmed banana leaves and virgin coconut oil to soothe muscles and relieve tension.',
     duration: ['30 mins', '60 mins', '90 mins']
   },
   { 
-    id: '3', 
-    name: 'Shiatsu Massage', 
+    id: '2', 
+    name: 'Dagdagay', 
     image: require('../../../../assets/home-massage-spain.jpg'),
-    price: 1800,
-    description: 'Japanese pressure point massage for energy flow and relaxation',
-    duration: ['60 mins', '90 mins']
+    price: 200,
+    description: 'An ancient Filipino foot massage technique that uses bamboo sticks to stimulate pressure points.',
+    duration: ['30 mins', '45 mins']
+  },
+  { 
+    id: '3', 
+    name: 'Bentosa (Cupping)', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 400,
+    description: 'A traditional method using heated cups to create suction on the skin, drawing out toxins and improving blood flow.',
+    duration: ['30 mins', '60 mins']
   },
   { 
     id: '4', 
-    name: 'Thai Massage', 
+    name: 'Swedish Massage', 
     image: require('../../../../assets/home-massage-spain.jpg'),
-    price: 2000,
-    description: 'Traditional Thai massage with stretching and acupressure',
-    duration: ['60 mins', '90 mins', '120 mins']
+    price: 250,
+    description: 'The most common type of massage, known for relaxation and improving circulation with long, flowing strokes.',
+    duration: ['30 mins', '60 mins', '90 mins']
   },
   { 
     id: '5', 
+    name: 'Shiatsu', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 300,
+    description: 'A Japanese massage that uses pressure with fingers, thumbs, and palms on acupuncture points to balance energy flow.',
+    duration: ['60 mins', '90 mins']
+  },
+  { 
+    id: '6', 
+    name: 'Thai Massage', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 350,
+    description: 'An ancient healing system combining acupressure, Indian Ayurvedic principles, and assisted yoga postures.',
+    duration: ['60 mins', '90 mins', '120 mins']
+  },
+  { 
+    id: '7', 
     name: 'Aromatherapy Massage', 
     image: require('../../../../assets/home-massage-spain.jpg'),
-    price: 1600,
-    description: 'Therapeutic massage with essential oils for relaxation',
-    duration: ['30 mins', '60 mins']
+    price: 600,
+    description: 'Uses essential oils in conjunction with a gentle massage to enhance relaxation and therapeutic benefits.',
+    duration: ['60 mins', '75 mins']
+  },
+  { 
+    id: '8', 
+    name: 'Hot Stone Massage', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 650,
+    description: 'Smooth, heated stones are placed on the body and used as massage tools to deeply relax muscles.',
+    duration: ['60 mins', '75 mins']
+  },
+  { 
+    id: '9', 
+    name: 'Combination Massage', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 750,
+    description: 'Combines techniques from multiple massage styles to address individual needs and preferences.',
+    duration: ['60 mins', '90 mins']
+  },
+  { 
+    id: '10', 
+    name: 'Head, Neck, and Shoulder Massage', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 350,
+    description: 'Focused relief for tension and stress in the upper body, ideal for quick relaxation.',
+    duration: ['30 mins', '45 mins']
+  },
+  { 
+    id: '11', 
+    name: 'Foot Massage / Reflexology', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 200,
+    description: 'Therapeutic massage focusing on pressure points in the feet to promote overall body wellness.',
+    duration: ['35 mins', '45 mins']
   },
 ];
 
