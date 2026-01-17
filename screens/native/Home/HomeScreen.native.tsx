@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView } from 'react-native';
 import { Header } from '@/components/native/Header';
-import { SearchBar } from './components/SearchBar';
-import { SpecialDeals } from './components/SpecialDeals';
-import { Services } from './components/Services';
-import { TopRatedSalons } from './components/TopRatedSalons';
+import { SearchBar } from './components/Home/SearchBar';
+import { SpecialDeals } from './components/Home/SpecialDeals';
+import { Services } from './components/Home/Services';
+import { TopRatedSalons } from './components/Home/TopRatedSalons';
 import ServicesScreen from './ServicesScreen.native';
 import TopRatedSalonsScreen from './TopRatedSalonsScreen.native';
 import SalonDetailsScreen from './SalonDetailsScreen.native';
+import BookAppointmentScreen from './BookAppointmentScreen.native';
 import { getSalonDetails } from './configs/mockData';
 
 interface HomeScreenProps {
   onServicesScreenChange?: (isActive: boolean) => void;
   onTopRatedSalonsScreenChange?: (isActive: boolean) => void;
   onSalonDetailsScreenChange?: (isActive: boolean) => void;
+  onBookAppointmentScreenChange?: (isActive: boolean) => void;
 }
 
-export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScreenChange, onSalonDetailsScreenChange }: HomeScreenProps = {}) {
+export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScreenChange, onSalonDetailsScreenChange, onBookAppointmentScreenChange }: HomeScreenProps = {}) {
   const [showServicesScreen, setShowServicesScreen] = useState(false);
   const [showTopRatedSalonsScreen, setShowTopRatedSalonsScreen] = useState(false);
   const [selectedSalonId, setSelectedSalonId] = useState<string | null>(null);
+  const [showBookAppointmentScreen, setShowBookAppointmentScreen] = useState(false);
 
   // Notify parent when services screen state changes
   useEffect(() => {
@@ -36,6 +39,11 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
     onSalonDetailsScreenChange?.(selectedSalonId !== null);
   }, [selectedSalonId, onSalonDetailsScreenChange]);
 
+  // Notify parent when book appointment screen state changes
+  useEffect(() => {
+    onBookAppointmentScreenChange?.(showBookAppointmentScreen);
+  }, [showBookAppointmentScreen, onBookAppointmentScreenChange]);
+
   // Handle salon press
   const handleSalonPress = (salonId: string) => {
     setSelectedSalonId(salonId);
@@ -46,6 +54,32 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
     setSelectedSalonId(null);
   };
 
+  // Handle back from book appointment
+  const handleBackFromBookAppointment = () => {
+    setShowBookAppointmentScreen(false);
+  };
+
+  // Handle book appointment completion
+  const handleBookAppointmentComplete = () => {
+    setShowBookAppointmentScreen(false);
+    // TODO: Navigate to bookings screen or show success message
+    console.log('Booking completed');
+  };
+
+  // If book appointment screen is active, show book appointment screen
+  if (showBookAppointmentScreen && selectedSalonId) {
+    const salonDetails = getSalonDetails(selectedSalonId);
+    if (salonDetails) {
+      return (
+        <BookAppointmentScreen
+          salonDetails={salonDetails}
+          onBack={handleBackFromBookAppointment}
+          onComplete={handleBookAppointmentComplete}
+        />
+      );
+    }
+  }
+
   // If salon details screen is active, show salon details screen
   if (selectedSalonId) {
     const salonDetails = getSalonDetails(selectedSalonId);
@@ -55,8 +89,7 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
           salonDetails={salonDetails}
           onBack={handleBackFromSalonDetails}
           onBookAppointment={() => {
-            // TODO: Implement book appointment functionality
-            console.log('Book appointment for salon:', selectedSalonId);
+            setShowBookAppointmentScreen(true);
           }}
         />
       );

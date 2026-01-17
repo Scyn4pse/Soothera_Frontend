@@ -15,6 +15,7 @@ function MainContent() {
   const [isServicesScreenActive, setIsServicesScreenActive] = useState(false);
   const [isTopRatedSalonsScreenActive, setIsTopRatedSalonsScreenActive] = useState(false);
   const [isSalonDetailsScreenActive, setIsSalonDetailsScreenActive] = useState(false);
+  const [isBookAppointmentScreenActive, setIsBookAppointmentScreenActive] = useState(false);
 
   const handleTabPress = (tabId: TabId) => {
     setActiveTab(tabId);
@@ -28,6 +29,7 @@ function MainContent() {
             onServicesScreenChange={setIsServicesScreenActive}
             onTopRatedSalonsScreenChange={setIsTopRatedSalonsScreenActive}
             onSalonDetailsScreenChange={setIsSalonDetailsScreenActive}
+            onBookAppointmentScreenChange={setIsBookAppointmentScreenActive}
           />
         );
       case 'bookings':
@@ -40,6 +42,7 @@ function MainContent() {
             onServicesScreenChange={setIsServicesScreenActive}
             onTopRatedSalonsScreenChange={setIsTopRatedSalonsScreenActive}
             onSalonDetailsScreenChange={setIsSalonDetailsScreenActive}
+            onBookAppointmentScreenChange={setIsBookAppointmentScreenActive}
           />
         );
     }
@@ -51,8 +54,8 @@ function MainContent() {
         {renderScreen()}
       </View>
 
-      {/* Bottom Tab Navigation - Hide when details screen, services screen, top rated salons screen, or salon details screen is active */}
-      {!isDetailsScreenActive && !isServicesScreenActive && !isTopRatedSalonsScreenActive && !isSalonDetailsScreenActive && (
+      {/* Bottom Tab Navigation - Hide when details screen, services screen, top rated salons screen, salon details screen, or book appointment screen is active */}
+      {!isDetailsScreenActive && !isServicesScreenActive && !isTopRatedSalonsScreenActive && !isSalonDetailsScreenActive && !isBookAppointmentScreenActive && (
       <BottomTabs
         activeTab={activeTab}
         onTabPress={handleTabPress}

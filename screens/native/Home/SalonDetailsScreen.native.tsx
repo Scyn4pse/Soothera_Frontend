@@ -1036,7 +1036,7 @@ export default function SalonDetailsScreen({
         <TouchableOpacity
           className="w-full flex-row items-center justify-center px-4 py-4 rounded-xl"
           style={{ backgroundColor: primaryColor }}
-          onPress={onBookAppointment}
+          onPress={() => onBookAppointment?.()}
         >
           <Text className="text-base text-white font-semibold">Book Appointment</Text>
         </TouchableOpacity>

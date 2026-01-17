@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
-import { topRatedSalons } from '../configs/mockData';
+import { topRatedSalons } from '../../configs/mockData';
 
 interface TopRatedSalonsProps {
   onSeeAll?: () => void;

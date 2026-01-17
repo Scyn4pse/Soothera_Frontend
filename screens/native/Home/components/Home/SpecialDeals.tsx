@@ -4,7 +4,7 @@ import { Text } from '@/components/Text';
 import { primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
-import { specialDeals } from '../configs/mockData';
+import { specialDeals } from '../../configs/mockData';
 
 export function SpecialDeals() {
   const colorScheme = useColorScheme();
