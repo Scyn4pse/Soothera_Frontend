@@ -14,6 +14,7 @@ function MainContent() {
   const [isDetailsScreenActive, setIsDetailsScreenActive] = useState(false);
   const [isServicesScreenActive, setIsServicesScreenActive] = useState(false);
   const [isTopRatedSalonsScreenActive, setIsTopRatedSalonsScreenActive] = useState(false);
+  const [isSalonDetailsScreenActive, setIsSalonDetailsScreenActive] = useState(false);
 
   const handleTabPress = (tabId: TabId) => {
     setActiveTab(tabId);
@@ -26,6 +27,7 @@ function MainContent() {
           <HomeScreen 
             onServicesScreenChange={setIsServicesScreenActive}
             onTopRatedSalonsScreenChange={setIsTopRatedSalonsScreenActive}
+            onSalonDetailsScreenChange={setIsSalonDetailsScreenActive}
           />
         );
       case 'bookings':
@@ -37,6 +39,7 @@ function MainContent() {
           <HomeScreen 
             onServicesScreenChange={setIsServicesScreenActive}
             onTopRatedSalonsScreenChange={setIsTopRatedSalonsScreenActive}
+            onSalonDetailsScreenChange={setIsSalonDetailsScreenActive}
           />
         );
     }
@@ -48,8 +51,8 @@ function MainContent() {
         {renderScreen()}
       </View>
 
-      {/* Bottom Tab Navigation - Hide when details screen, services screen, or top rated salons screen is active */}
-      {!isDetailsScreenActive && !isServicesScreenActive && !isTopRatedSalonsScreenActive && (
+      {/* Bottom Tab Navigation - Hide when details screen, services screen, top rated salons screen, or salon details screen is active */}
+      {!isDetailsScreenActive && !isServicesScreenActive && !isTopRatedSalonsScreenActive && !isSalonDetailsScreenActive && (
       <BottomTabs
         activeTab={activeTab}
         onTabPress={handleTabPress}

@@ -9,9 +9,10 @@ import { topRatedSalons } from '../configs/mockData';
 
 interface TopRatedSalonsProps {
   onSeeAll?: () => void;
+  onSalonPress?: (salonId: string) => void;
 }
 
-export function TopRatedSalons({ onSeeAll }: TopRatedSalonsProps = {}) {
+export function TopRatedSalons({ onSeeAll, onSalonPress }: TopRatedSalonsProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [isAtEnd, setIsAtEnd] = useState(false);
@@ -88,7 +89,12 @@ export function TopRatedSalons({ onSeeAll }: TopRatedSalonsProps = {}) {
           scrollEventThrottle={16}
         >
           {topRatedSalons.slice(0, 4).map((salon) => (
-            <View key={salon.id} className="w-56 mr-4">
+            <TouchableOpacity 
+              key={salon.id} 
+              className="w-56 mr-4"
+              activeOpacity={0.7}
+              onPress={() => onSalonPress?.(salon.id)}
+            >
               <View className="relative rounded-2xl overflow-hidden mb-2">
                 <Image
                   source={salon.image}
@@ -111,7 +117,7 @@ export function TopRatedSalons({ onSeeAll }: TopRatedSalonsProps = {}) {
                   </Text>
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
 

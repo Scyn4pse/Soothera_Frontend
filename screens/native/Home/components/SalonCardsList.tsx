@@ -9,9 +9,10 @@ import { Colors } from '@/constants/theme';
 interface SalonCardsListProps {
   salons: TopRatedSalon[];
   contentContainerStyle?: object;
+  onSalonPress?: (salonId: string) => void;
 }
 
-export function SalonCardsList({ salons, contentContainerStyle }: SalonCardsListProps) {
+export function SalonCardsList({ salons, contentContainerStyle, onSalonPress }: SalonCardsListProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -25,6 +26,7 @@ export function SalonCardsList({ salons, contentContainerStyle }: SalonCardsList
         key={salon.id}
         className="mb-4"
         activeOpacity={0.7}
+        onPress={() => onSalonPress?.(salon.id)}
       >
         <View 
           className="rounded-xl overflow-hidden bg-white"

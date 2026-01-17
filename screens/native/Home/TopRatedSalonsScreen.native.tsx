@@ -6,9 +6,10 @@ import { topRatedSalons } from './configs/mockData';
 
 interface TopRatedSalonsScreenProps {
   onBack?: () => void;
+  onSalonPress?: (salonId: string) => void;
 }
 
-export default function TopRatedSalonsScreen({ onBack }: TopRatedSalonsScreenProps = {}) {
+export default function TopRatedSalonsScreen({ onBack, onSalonPress }: TopRatedSalonsScreenProps = {}) {
   return (
     <View className="flex-1 bg-white">
       {/* Search Bar with Back Button */}
@@ -18,6 +19,7 @@ export default function TopRatedSalonsScreen({ onBack }: TopRatedSalonsScreenPro
       <SalonCardsList 
         salons={topRatedSalons}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
+        onSalonPress={onSalonPress}
       />
     </View>
   );
