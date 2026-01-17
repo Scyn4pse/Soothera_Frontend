@@ -12,7 +12,7 @@ export default function ServicesScreen({ onBack }: ServicesScreenProps = {}) {
   return (
     <View className="flex-1 bg-white">
       {/* Search Bar with Back Button */}
-      <SearchBarWithBack onBack={onBack} />
+      <SearchBarWithBack onBack={onBack} placeholder="Search Services..." />
 
       {/* All Services in Card View - Masonry Layout */}
       <ServiceCardsGrid 

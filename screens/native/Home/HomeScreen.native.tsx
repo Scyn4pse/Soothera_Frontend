@@ -6,22 +6,35 @@ import { SpecialDeals } from './components/SpecialDeals';
 import { Services } from './components/Services';
 import { TopRatedSalons } from './components/TopRatedSalons';
 import ServicesScreen from './ServicesScreen.native';
+import TopRatedSalonsScreen from './TopRatedSalonsScreen.native';
 
 interface HomeScreenProps {
   onServicesScreenChange?: (isActive: boolean) => void;
+  onTopRatedSalonsScreenChange?: (isActive: boolean) => void;
 }
 
-export default function HomeScreen({ onServicesScreenChange }: HomeScreenProps = {}) {
+export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScreenChange }: HomeScreenProps = {}) {
   const [showServicesScreen, setShowServicesScreen] = useState(false);
+  const [showTopRatedSalonsScreen, setShowTopRatedSalonsScreen] = useState(false);
 
   // Notify parent when services screen state changes
   useEffect(() => {
     onServicesScreenChange?.(showServicesScreen);
   }, [showServicesScreen, onServicesScreenChange]);
 
+  // Notify parent when top rated salons screen state changes
+  useEffect(() => {
+    onTopRatedSalonsScreenChange?.(showTopRatedSalonsScreen);
+  }, [showTopRatedSalonsScreen, onTopRatedSalonsScreenChange]);
+
   // If services screen is active, show services screen
   if (showServicesScreen) {
     return <ServicesScreen onBack={() => setShowServicesScreen(false)} />;
+  }
+
+  // If top rated salons screen is active, show top rated salons screen
+  if (showTopRatedSalonsScreen) {
+    return <TopRatedSalonsScreen onBack={() => setShowTopRatedSalonsScreen(false)} />;
   }
 
   return (
@@ -40,7 +53,7 @@ export default function HomeScreen({ onServicesScreenChange }: HomeScreenProps =
         <Services onSeeAll={() => setShowServicesScreen(true)} />
 
         {/* Top Rated Salons Section */}
-        <TopRatedSalons />
+        <TopRatedSalons onSeeAll={() => setShowTopRatedSalonsScreen(true)} />
       </ScrollView>
     </View>
   );

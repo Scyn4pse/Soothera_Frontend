@@ -101,8 +101,84 @@ export const services: Service[] = [
 
 // Mock data for top rated salons
 export const topRatedSalons: TopRatedSalon[] = [
-  { id: '1', name: 'Salon Elite', rating: 4.8, location: 'Talamban, Cebu', image: require('../../../../assets/salon.jpg') },
-  { id: '2', name: 'Beauty Haven', rating: 4.9, location: 'Banilad, Cebu', image: require('../../../../assets/salon.jpg') },
-  { id: '3', name: 'Style Studio', rating: 4.7, location: 'Mandaue City, Cebu', image: require('../../../../assets/salon.jpg') },
-  { id: '4', name: 'Glamour House', rating: 4.8, location: 'Lapu-Lapu City, Cebu', image: require('../../../../assets/salon.jpg') },
+  { 
+    id: '1', 
+    name: 'Salon Elite', 
+    rating: 4.8, 
+    location: 'Talamban, Cebu', 
+    image: require('../../../../assets/salon.jpg'),
+    services: ['Swedish Massage', 'Thai Massage', 'Aromatherapy', 'Hot Stone Massage']
+  },
+  { 
+    id: '2', 
+    name: 'Beauty Haven', 
+    rating: 4.9, 
+    location: 'Banilad, Cebu', 
+    image: require('../../../../assets/salon.jpg'),
+    services: ['Hilot', 'Shiatsu', 'Foot Massage', 'Head, Neck, and Shoulder Massage']
+  },
+  { 
+    id: '3', 
+    name: 'Style Studio', 
+    rating: 4.7, 
+    location: 'Mandaue City, Cebu', 
+    image: require('../../../../assets/salon.jpg'),
+    services: ['Dagdagay', 'Bentosa (Cupping)', 'Combination Massage', 'Swedish Massage']
+  },
+  { 
+    id: '4', 
+    name: 'Glamour House', 
+    rating: 4.8, 
+    location: 'Lapu-Lapu City, Cebu', 
+    image: require('../../../../assets/salon.jpg'),
+    services: ['Thai Massage', 'Aromatherapy', 'Hot Stone Massage', 'Shiatsu']
+  },
+  { 
+    id: '5', 
+    name: 'Serenity Spa', 
+    rating: 4.9, 
+    location: 'IT Park, Cebu', 
+    image: require('../../../../assets/salon.jpg'),
+    services: ['Aromatherapy', 'Hot Stone Massage', 'Swedish Massage', 'Thai Massage']
+  },
+  { 
+    id: '6', 
+    name: 'Zen Wellness Center', 
+    rating: 4.6, 
+    location: 'Ayala Center, Cebu', 
+    image: require('../../../../assets/salon.jpg'),
+    services: ['Shiatsu', 'Combination Massage', 'Head, Neck, and Shoulder Massage', 'Foot Massage']
+  },
+  { 
+    id: '7', 
+    name: 'Tranquil Touch', 
+    rating: 4.8, 
+    location: 'SM City, Cebu', 
+    image: require('../../../../assets/salon.jpg'),
+    services: ['Hilot', 'Dagdagay', 'Bentosa (Cupping)', 'Swedish Massage']
+  },
+  { 
+    id: '8', 
+    name: 'Blissful Retreat', 
+    rating: 4.7, 
+    location: 'Robinsons, Cebu', 
+    image: require('../../../../assets/salon.jpg'),
+    services: ['Thai Massage', 'Aromatherapy', 'Hot Stone Massage', 'Combination Massage']
+  },
+  { 
+    id: '9', 
+    name: 'Harmony Spa', 
+    rating: 4.9, 
+    location: 'Crossroads, Cebu', 
+    image: require('../../../../assets/salon.jpg'),
+    services: ['Shiatsu', 'Swedish Massage', 'Foot Massage', 'Head, Neck, and Shoulder Massage']
+  },
+  { 
+    id: '10', 
+    name: 'Elegance Salon', 
+    rating: 4.8, 
+    location: 'JY Square, Cebu', 
+    image: require('../../../../assets/salon.jpg'),
+    services: ['Thai Massage', 'Hot Stone Massage', 'Aromatherapy', 'Hilot']
+  },
 ];

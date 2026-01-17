@@ -22,4 +22,5 @@ export interface TopRatedSalon {
   rating: number;
   location: string;
   image: ImageSourcePropType;
+  services: string[]; // e.g., ['Swedish Massage', 'Thai Massage', 'Aromatherapy']
 }
