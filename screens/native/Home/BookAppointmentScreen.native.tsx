@@ -10,10 +10,24 @@ import { Service } from './types/Home';
 import { Therapist } from './types/SalonDetails';
 import { services } from './configs/mockData';
 
+interface BookingData {
+  service: Service | null;
+  duration: string;
+  addOns: AddOn[];
+  therapist: Therapist | null;
+  date: Date;
+  time: Date;
+  instructions: string;
+  promoCode: string;
+  salonDetails: SalonDetails;
+  totalPrice: number;
+}
+
 interface BookAppointmentScreenProps {
   salonDetails: SalonDetails;
   onBack: () => void;
   onComplete?: () => void;
+  onPaymentSuccess?: (bookingData: BookingData) => void;
 }
 
 interface AddOn {
@@ -36,6 +50,7 @@ export default function BookAppointmentScreen({
   salonDetails,
   onBack,
   onComplete,
+  onPaymentSuccess,
 }: BookAppointmentScreenProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -285,8 +300,35 @@ export default function BookAppointmentScreen({
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete booking
-      onComplete?.();
+      // Prepare booking data
+      const selectedTherapistData = selectedTherapist
+        ? salonDetails.therapists.find(t => t.id === selectedTherapist)
+        : null;
+      
+      const selectedAddOnsData = selectedAddOns
+        .map(addOnId => addOns.find(a => a.id === addOnId))
+        .filter((addOn): addOn is AddOn => addOn !== undefined);
+
+      const bookingData: BookingData = {
+        service: selectedService,
+        duration: selectedDuration,
+        addOns: selectedAddOnsData,
+        therapist: selectedTherapistData || null,
+        date: selectedDate,
+        time: selectedTime,
+        instructions: instructions,
+        promoCode: promoCode,
+        salonDetails: salonDetails,
+        totalPrice: calculatePrice(),
+      };
+
+      // Navigate to payment success screen
+      if (onPaymentSuccess) {
+        onPaymentSuccess(bookingData);
+      } else {
+        // Fallback to onComplete if onPaymentSuccess is not provided
+        onComplete?.();
+      }
     }
   };
 

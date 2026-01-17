@@ -9,7 +9,23 @@ import ServicesScreen from './ServicesScreen.native';
 import TopRatedSalonsScreen from './TopRatedSalonsScreen.native';
 import SalonDetailsScreen from './SalonDetailsScreen.native';
 import BookAppointmentScreen from './BookAppointmentScreen.native';
+import PaymentSuccessfulScreen from './PaymentSuccessfulScreen.native';
 import { getSalonDetails } from './configs/mockData';
+import { Service } from './types/Home';
+import { SalonDetails, Therapist } from './types/SalonDetails';
+
+interface BookingData {
+  service: Service | null;
+  duration: string;
+  addOns: Array<{ id: string; name: string; price: number }>;
+  therapist: Therapist | null;
+  date: Date;
+  time: Date;
+  instructions: string;
+  promoCode: string;
+  salonDetails: SalonDetails;
+  totalPrice: number;
+}
 
 interface HomeScreenProps {
   onServicesScreenChange?: (isActive: boolean) => void;
@@ -23,6 +39,8 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
   const [showTopRatedSalonsScreen, setShowTopRatedSalonsScreen] = useState(false);
   const [selectedSalonId, setSelectedSalonId] = useState<string | null>(null);
   const [showBookAppointmentScreen, setShowBookAppointmentScreen] = useState(false);
+  const [showPaymentSuccessfulScreen, setShowPaymentSuccessfulScreen] = useState(false);
+  const [bookingData, setBookingData] = useState<BookingData | null>(null);
 
   // Notify parent when services screen state changes
   useEffect(() => {
@@ -66,6 +84,37 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
     console.log('Booking completed');
   };
 
+  // Handle payment success
+  const handlePaymentSuccess = (data: BookingData) => {
+    setBookingData(data);
+    setShowBookAppointmentScreen(false);
+    setShowPaymentSuccessfulScreen(true);
+  };
+
+  // Handle back from payment successful screen
+  const handleBackFromPaymentSuccessful = () => {
+    setShowPaymentSuccessfulScreen(false);
+    setBookingData(null);
+  };
+
+  // Handle home from payment successful screen
+  const handleHomeFromPaymentSuccessful = () => {
+    setShowPaymentSuccessfulScreen(false);
+    setBookingData(null);
+    setSelectedSalonId(null);
+  };
+
+  // If payment successful screen is active, show payment successful screen
+  if (showPaymentSuccessfulScreen && bookingData) {
+    return (
+      <PaymentSuccessfulScreen
+        bookingData={bookingData}
+        onBack={handleBackFromPaymentSuccessful}
+        onHome={handleHomeFromPaymentSuccessful}
+      />
+    );
+  }
+
   // If book appointment screen is active, show book appointment screen
   if (showBookAppointmentScreen && selectedSalonId) {
     const salonDetails = getSalonDetails(selectedSalonId);
@@ -75,6 +124,7 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
           salonDetails={salonDetails}
           onBack={handleBackFromBookAppointment}
           onComplete={handleBookAppointmentComplete}
+          onPaymentSuccess={handlePaymentSuccess}
         />
       );
     }
