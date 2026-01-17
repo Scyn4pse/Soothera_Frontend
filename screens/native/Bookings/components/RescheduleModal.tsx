@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, View, TouchableOpacity, TouchableWithoutFeedback, ScrollView, Dimensions } from 'react-native';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Modal, View, TouchableOpacity, TouchableWithoutFeedback, ScrollView } from 'react-native';
 import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, primaryColor } from '@/constants/theme';
@@ -32,11 +32,9 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
     initialTime || new Date()
   );
 
-  // Calendar view state (current month being displayed)
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  
-  // Calendar container width for calculating day cell size
-  const [calendarWidth, setCalendarWidth] = useState<number>(0);
+  // Refs for ScrollViews to enable auto-scroll
+  const timeScrollViewRef = useRef<ScrollView>(null);
+  const dateScrollViewRef = useRef<ScrollView>(null);
 
   // Update state when initial values change or modal visibility changes
   useEffect(() => {
@@ -51,9 +49,6 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
       } else {
         setSelectedTime(new Date());
       }
-      // Set current month to selected date or today
-      const dateToShow = initialDate || new Date();
-      setCurrentMonth(new Date(dateToShow.getFullYear(), dateToShow.getMonth(), 1));
       
       // Round initial time to nearest 15-minute interval
       if (initialTime) {
@@ -99,13 +94,31 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
     return slots;
   }, [selectedDate]);
 
-  // Format date for display
-  const formatDate = (date: Date): string => {
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  // Calculate the index of the selected time slot
+  const selectedTimeIndex = useMemo(() => {
+    return timeSlots.findIndex(slot => 
+      selectedTime.getHours() === slot.getHours() &&
+      selectedTime.getMinutes() === slot.getMinutes()
+    );
+  }, [timeSlots, selectedTime]);
+
+  // Auto-scroll to selected time when modal opens or selected time changes
+  useEffect(() => {
+    if (visible && selectedTimeIndex >= 0 && timeScrollViewRef.current) {
+      // Wait for layout to complete before scrolling
+      setTimeout(() => {
+        // Calculate approximate position (each button is ~70px wide with margins)
+        const buttonWidth = 70; // Approximate width of time button
+        const scrollPosition = Math.max(0, (selectedTimeIndex * buttonWidth) - 20); // 20px offset from start
+        timeScrollViewRef.current?.scrollTo({ x: scrollPosition, animated: true });
+      }, 100);
+    }
+  }, [visible, selectedTimeIndex]);
+
+  // Format day name abbreviation
+  const getDayName = (date: Date): string => {
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return dayNames[date.getDay()];
   };
 
   // Format time for display
@@ -132,14 +145,6 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
   };
 
   // Calendar helper functions
-  const getDaysInMonth = (date: Date): number => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (date: Date): number => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
-
   const isSameDay = (date1: Date, date2: Date): boolean => {
     return (
       date1.getDate() === date2.getDate() &&
@@ -148,89 +153,96 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
     );
   };
 
-  const isToday = (date: Date): boolean => {
-    const today = new Date();
-    return isSameDay(date, today);
-  };
 
-  const isPast = (date: Date): boolean => {
+  // Get today's date
+  const todayDate = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    today.setMinutes(0, 0);
-    today.setSeconds(0, 0);
-    today.setMilliseconds(0);
-    const compareDate = new Date(date);
-    compareDate.setHours(0, 0, 0, 0);
-    compareDate.setMinutes(0, 0);
-    compareDate.setSeconds(0, 0);
-    compareDate.setMilliseconds(0);
-    // Only mark as past if the date is strictly before today (allow today)
-    return compareDate.getTime() < today.getTime();
-  };
+    return today;
+  }, []);
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    const newMonth = new Date(currentMonth);
-    if (direction === 'prev') {
-      newMonth.setMonth(newMonth.getMonth() - 1);
-    } else {
-      newMonth.setMonth(newMonth.getMonth() + 1);
-    }
-    setCurrentMonth(newMonth);
-  };
+  // State for tracking the visible month based on scroll position
+  const [visibleMonth, setVisibleMonth] = useState<Date>(todayDate);
 
-  const handleDateSelect = (day: number) => {
-    const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    // Allow selection of today and future dates only
-    if (!isPast(newDate)) {
-      setSelectedDate(newDate);
-    }
-  };
-
-  // Generate calendar days
-  const calendarDays = useMemo(() => {
-    const daysInMonth = getDaysInMonth(currentMonth);
-    const firstDay = getFirstDayOfMonth(currentMonth);
-    const days: (number | null)[] = [];
+  // Generate dates starting from today until the end of the current month
+  // If within last 7 days, also include first 7 days of next month
+  const monthDates = useMemo(() => {
+    const dates: Date[] = [];
+    const start = new Date(todayDate);
+    const year = start.getFullYear();
+    const month = start.getMonth();
     
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < firstDay; i++) {
-      days.push(null);
+    // Calculate the last day of the current month
+    const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+    const currentDay = start.getDate();
+    
+    // Check if we're within the last 7 days of the month
+    const daysRemainingInMonth = lastDayOfMonth - currentDay + 1;
+    const shouldIncludeNextMonth = daysRemainingInMonth <= 7;
+    
+    // Generate dates from today until the end of the month
+    for (let day = currentDay; day <= lastDayOfMonth; day++) {
+      const date = new Date(year, month, day);
+      dates.push(date);
     }
     
-    // Add all days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(day);
+    // If within last 7 days, add first 7 days of next month
+    if (shouldIncludeNextMonth) {
+      const nextMonth = month === 11 ? 0 : month + 1;
+      const nextYear = month === 11 ? year + 1 : year;
+      
+      for (let day = 1; day <= 7; day++) {
+        const date = new Date(nextYear, nextMonth, day);
+        dates.push(date);
+      }
     }
     
-    return days;
-  }, [currentMonth]);
+    return dates;
+  }, [todayDate]);
+
+  // Calculate the index of the selected date in monthDates
+  const selectedDateIndex = useMemo(() => {
+    return monthDates.findIndex(date => isSameDay(date, selectedDate));
+  }, [monthDates, selectedDate]);
+
+  // Auto-scroll to selected date when modal opens or selected date changes
+  useEffect(() => {
+    if (visible && selectedDateIndex >= 0 && dateScrollViewRef.current) {
+      // Wait for layout to complete before scrolling
+      setTimeout(() => {
+        // Calculate approximate position (each button is ~70px wide with margins)
+        const buttonWidth = 70; // Approximate width of date button
+        const scrollPosition = Math.max(0, (selectedDateIndex * buttonWidth) - 20); // 20px offset from start
+        dateScrollViewRef.current?.scrollTo({ x: scrollPosition, animated: true });
+      }, 100);
+    }
+  }, [visible, selectedDateIndex]);
+
+  // Handle scroll to update visible month
+  const handleDateScroll = (event: any) => {
+    const scrollX = event.nativeEvent.contentOffset.x;
+    const buttonWidth = 70; // Approximate width of date button
+    const visibleIndex = Math.floor(scrollX / buttonWidth);
+    
+    if (visibleIndex >= 0 && visibleIndex < monthDates.length) {
+      const visibleDate = monthDates[visibleIndex];
+      if (visibleDate && visibleDate.getMonth() !== visibleMonth.getMonth()) {
+        setVisibleMonth(new Date(visibleDate.getFullYear(), visibleDate.getMonth(), 1));
+      }
+    }
+  };
+
+  // Update visibleMonth when selectedDate changes
+  useEffect(() => {
+    if (selectedDate) {
+      setVisibleMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+    }
+  }, [selectedDate]);
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  // Calculate day cell size for calendar grid based on actual container width
-  const dayCellSize = useMemo(() => {
-    let calculatedSize: number;
-    if (calendarWidth === 0) {
-      // Fallback calculation if container hasn't been measured yet
-      const screenWidth = Dimensions.get('window').width;
-      const modalMaxWidth = Math.min(384, screenWidth - 40);
-      const availableWidth = modalMaxWidth - 48 - 24; // modal padding + calendar padding
-      calculatedSize = Math.floor(availableWidth / 7);
-    } else {
-      // Use actual measured width, accounting for padding (p-3 = 12px each side = 24px total)
-      const availableWidth = calendarWidth - 24;
-      calculatedSize = Math.floor(availableWidth / 7);
-    }
-    // Ensure minimum size for clickability (at least 40px for proper touch target)
-    const finalSize = Math.max(calculatedSize, 40);
-    console.log('Day cell size calculated:', finalSize, 'calendarWidth:', calendarWidth);
-    return finalSize;
-  }, [calendarWidth]);
 
 
   // Handle confirm
@@ -285,195 +297,115 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
                 Re-schedule Booking
               </Text>
 
-              {/* Custom Date Picker Section */}
-              <View className="mb-4">
-                <Text
-                  className="text-sm font-semibold mb-2"
-                  style={{ color: colors.text }}
-                >
-                  Select Date
-                </Text>
-                <View
-                  className="rounded-xl border p-3"
-                  style={{
-                    borderColor: isDark ? '#3a3a3a' : '#E5E7EB',
-                    backgroundColor: isDark ? '#2a2a2a' : '#F9FAFB',
-                  }}
-                  onLayout={(event) => {
-                    const { width } = event.nativeEvent.layout;
-                    setCalendarWidth(width);
-                  }}
-                >
-                  {/* Month Navigation */}
-                  <View className="flex-row items-center justify-between mb-4">
-                    <TouchableOpacity
-                      onPress={() => navigateMonth('prev')}
-                      className="w-8 h-8 items-center justify-center rounded-full"
-                      style={{ backgroundColor: isDark ? '#3a3a3a' : '#E5E7EB' }}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons
-                        name="chevron-back"
-                        size={18}
-                        color={colors.text}
-                      />
-                    </TouchableOpacity>
-                    <Text
-                      className="text-base font-semibold"
-                      style={{ color: colors.text }}
-                    >
-                      {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => navigateMonth('next')}
-                      className="w-8 h-8 items-center justify-center rounded-full"
-                      style={{ backgroundColor: isDark ? '#3a3a3a' : '#E5E7EB' }}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons
-                        name="chevron-forward"
-                        size={18}
-                        color={colors.text}
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Day Names Header */}
-                  <View className="flex-row mb-2">
-                    {dayNames.map((day, index) => (
-                      <View key={index} className="flex-1 items-center py-1">
-                        <Text
-                          className="text-xs font-medium"
-                          style={{ color: colors.icon }}
-                        >
-                          {day}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-
-                  {/* Calendar Grid */}
-                  <View className="flex-row flex-wrap" style={{ width: '100%' }}>
-                    {calendarDays.map((day, index) => {
-                      if (day === null) {
-                        return (
-                          <View
-                            key={index}
-                            style={{
-                              width: dayCellSize,
-                              height: dayCellSize,
-                              minWidth: 40,
-                              minHeight: 40,
-                            }}
-                          />
-                        );
-                      }
-
-                      const dayDate = new Date(
-                        currentMonth.getFullYear(),
-                        currentMonth.getMonth(),
-                        day
-                      );
-                      const isSelected = isSameDay(dayDate, selectedDate);
-                      const isDayToday = isToday(dayDate);
-                      const isDayPast = isPast(dayDate);
-
-                      return (
-                        <TouchableOpacity
-                          key={index}
-                          className="items-center justify-center rounded-lg"
-                          style={{
-                            width: dayCellSize,
-                            height: dayCellSize,
-                            minWidth: 40,
-                            minHeight: 40,
-                            backgroundColor: isSelected
-                              ? colors.primary
-                              : isDayToday
-                              ? `${colors.primary}20`
-                              : isDark
-                              ? '#2a2a2a'
-                              : '#F9FAFB',
-                            opacity: isDayPast ? 0.3 : 1,
-                            borderWidth: isSelected ? 2 : 0,
-                            borderColor: isSelected ? colors.primary : 'transparent',
-                          }}
-                          onPress={() => {
-                            console.log('Date pressed:', day, 'isPast:', isDayPast);
-                            handleDateSelect(day);
-                          }}
-                          disabled={isDayPast}
-                          activeOpacity={0.6}
-                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                        >
-                          <Text
-                            className="text-sm font-medium"
-                            style={{
-                              color: isSelected
-                                ? 'white'
-                                : isDayToday
-                                ? colors.primary
-                                : isDayPast
-                                ? colors.icon
-                                : colors.text,
-                            }}
-                          >
-                            {day}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                </View>
-              </View>
-
-              {/* Time Slots Section */}
+              {/* Date Section */}
               <View className="mb-6">
                 <Text
-                  className="text-sm font-semibold mb-2"
+                  className="text-sm font-semibold mb-3"
                   style={{ color: colors.text }}
                 >
-                  Select Time
+                  Date
                 </Text>
-                <View
-                  className="rounded-xl border"
-                  style={{
-                    borderColor: isDark ? '#3a3a3a' : '#E5E7EB',
-                    backgroundColor: isDark ? '#2a2a2a' : '#F9FAFB',
-                  }}
-                >
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ padding: 8 }}
-                    nestedScrollEnabled
+                
+                {/* Month Display */}
+                <View className="flex-row items-center justify-center mb-3">
+                  <Text
+                    className="text-base font-medium"
+                    style={{ color: colors.text }}
                   >
-                    {timeSlots.map((slot, index) => {
-                      const isSelected = isTimeSlotSelected(slot);
-                      return (
-                        <TouchableOpacity
-                          key={index}
-                          className="px-3 py-2 rounded-lg border mr-2"
-                          style={{
-                            borderColor: isSelected ? colors.primary : (isDark ? '#3a3a3a' : '#E5E7EB'),
-                            backgroundColor: isSelected ? colors.primary : 'transparent',
-                          }}
-                          onPress={() => handleTimeSlotSelect(slot)}
-                          activeOpacity={0.7}
-                        >
-                          <Text
-                            className="text-sm font-medium"
-                            style={{
-                              color: isSelected ? 'white' : colors.text,
-                            }}
-                          >
-                            {formatTime(slot)}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
+                    {monthNames[visibleMonth.getMonth()]}, {visibleMonth.getFullYear()}
+                  </Text>
                 </View>
+
+                {/* Date ScrollView */}
+                <ScrollView
+                  ref={dateScrollViewRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 4 }}
+                  nestedScrollEnabled
+                  style={{ flexGrow: 0 }}
+                  onScroll={handleDateScroll}
+                  scrollEventThrottle={16}
+                >
+                  {monthDates.map((date, index) => {
+                    const isSelected = isSameDay(date, selectedDate);
+
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        className="px-4 py-3 rounded-full border mr-2 items-center justify-center"
+                        style={{
+                          borderColor: isSelected ? colors.primary : (isDark ? '#3a3a3a' : '#E5E7EB'),
+                          backgroundColor: isSelected ? colors.primary : 'transparent',
+                          minWidth: 60,
+                        }}
+                        onPress={() => {
+                          setSelectedDate(new Date(date));
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          className="text-xs font-medium mb-0.5"
+                          style={{
+                            color: isSelected ? 'white' : colors.text,
+                          }}
+                        >
+                          {getDayName(date)}
+                        </Text>
+                        <Text
+                          className="text-sm font-semibold"
+                          style={{
+                            color: isSelected ? 'white' : colors.text,
+                          }}
+                        >
+                          {date.getDate()}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              {/* Time Section */}
+              <View className="mb-6">
+                <Text
+                  className="text-sm font-semibold mb-3"
+                  style={{ color: colors.text }}
+                >
+                  Time
+                </Text>
+                <ScrollView
+                  ref={timeScrollViewRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 4 }}
+                  nestedScrollEnabled
+                >
+                  {timeSlots.map((slot, index) => {
+                    const isSelected = isTimeSlotSelected(slot);
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        className="px-3 py-2 rounded-full border mr-2"
+                        style={{
+                          borderColor: isSelected ? colors.primary : (isDark ? '#3a3a3a' : '#E5E7EB'),
+                          backgroundColor: isSelected ? colors.primary : 'transparent',
+                        }}
+                        onPress={() => handleTimeSlotSelect(slot)}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          className="text-sm font-medium"
+                          style={{
+                            color: isSelected ? 'white' : colors.text,
+                          }}
+                        >
+                          {formatTime(slot)}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
               </View>
 
               {/* Buttons */}
