@@ -227,21 +227,25 @@ export const getSalonDetails = (salonId: string): SalonDetails | null => {
       userName: 'Sarah Johnson',
       rating: 5.0,
       comment: 'Excellent service! The staff was very professional and the atmosphere was relaxing.',
+      date: new Date(Date.now() - 11 * 30 * 24 * 60 * 60 * 1000), // 11 months ago
     },
     {
       userName: 'Michael Chen',
       rating: 4.5,
       comment: 'Great experience overall. Would definitely come back again.',
+      date: new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000), // 3 months ago
     },
     {
       userName: 'Emily Davis',
       rating: 4.8,
       comment: 'The therapists are skilled and the facility is clean and well-maintained.',
+      date: new Date(Date.now() - 7 * 30 * 24 * 60 * 60 * 1000), // 7 months ago
     },
     {
       userName: 'David Wilson',
       rating: 4.7,
       comment: 'Good value for money. Highly recommend this salon.',
+      date: new Date(Date.now() - 2 * 30 * 24 * 60 * 60 * 1000), // 2 months ago
     },
   ];
 

@@ -13,6 +13,7 @@ export interface Review {
   userName: string;
   rating: number;
   comment: string;
+  date?: Date | string;
 }
 
 export interface SalonDetails extends TopRatedSalon {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, ScrollView, Image, TouchableOpacity, Dimensions, BackHandler, Platform, Linking } from 'react-native';
+import { View, ScrollView, Image, TouchableOpacity, Dimensions, BackHandler, Platform, Linking, Animated } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { Colors, primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { TransparentHeader } from '@/components/native/TransparentHeader';
 import { SalonDetails } from './types/SalonDetails';
+import { services } from './configs/mockData';
 
 // Try to load react-native-maps at runtime for mobile. Do not import statically
 // so the web build / TS server won't fail if the native lib isn't installed.
@@ -240,6 +241,30 @@ const StarRating = ({ rating }: { rating: number }) => {
   );
 };
 
+// Format date as "X months ago" or similar relative time
+const formatRelativeDate = (date: Date | string | undefined): string => {
+  if (!date) return '';
+  
+  const reviewDate = typeof date === 'string' ? new Date(date) : date;
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - reviewDate.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 1) {
+    return 'today';
+  } else if (diffDays === 1) {
+    return '1 day ago';
+  } else if (diffDays < 30) {
+    return `${diffDays} days ago`;
+  } else if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return months === 1 ? '1 month ago' : `${months} months ago`;
+  } else {
+    const years = Math.floor(diffDays / 365);
+    return years === 1 ? '1 year ago' : `${years} years ago`;
+  }
+};
+
 export default function SalonDetailsScreen({ 
   salonDetails, 
   onBack,
@@ -250,10 +275,15 @@ export default function SalonDetailsScreen({
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabId>('services');
   const [isFavorited, setIsFavorited] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const [activeTabHeight, setActiveTabHeight] = useState(1);
   const tabScrollViewRef = useRef<ScrollView>(null);
   const contentScrollViewRef = useRef<ScrollView>(null);
+  const mainScrollViewRef = useRef<ScrollView>(null);
   const tabLayouts = useRef<{ [key: string]: { x: number; width: number } }>({});
   const screenWidth = Dimensions.get('window').width;
+  const heartOpacity = useRef(new Animated.Value(1)).current;
+  const isScrolledRef = useRef(false);
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'services', label: 'Services' },
@@ -396,33 +426,221 @@ export default function SalonDetailsScreen({
     return () => clearTimeout(timer);
   }, [activeTab]);
 
+  // Animate heart button opacity - fade immediately upon scroll
+  useEffect(() => {
+    const isScrolled = scrollY > 0;
+    
+    // Only animate when transitioning between scrolled and not-scrolled states
+    if (isScrolled !== isScrolledRef.current) {
+      isScrolledRef.current = isScrolled;
+      
+      if (isScrolled) {
+        // Fade out immediately when scrolling starts
+        Animated.timing(heartOpacity, {
+          toValue: 0,
+          duration: 100,
+          useNativeDriver: true,
+        }).start();
+      } else {
+        // Fade in when back at top
+        Animated.timing(heartOpacity, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }).start();
+      }
+    }
+  }, [scrollY, heartOpacity]);
+
   // Render tab content
   const renderTabContent = (tabId?: TabId) => {
     const currentTab = tabId || activeTab;
     switch (currentTab) {
       case 'services':
+        // Split services into two columns for masonry layout
+        const column1: typeof services = [];
+        const column2: typeof services = [];
+        services.forEach((service, index) => {
+          if (index % 2 === 0) {
+            column1.push(service);
+          } else {
+            column2.push(service);
+          }
+        });
+
+        const formatPrice = (price: number) => {
+          return `₱${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        };
+
         return (
           <View className="px-5 py-4">
             <Text className="text-lg font-semibold mb-3" style={{ color: colors.text }}>
-              Services ({salonDetails.services.length})
+              Services ({services.length})
             </Text>
-            <View className="flex-row flex-wrap" style={{ gap: 8 }}>
-              {salonDetails.services.map((service, index) => (
-                <View
-                  key={index}
-                  className="px-3 py-2 rounded-lg"
-                  style={{ 
-                    backgroundColor: colors.primary + '20',
-                  }}
-                >
-                  <Text 
-                    className="text-sm font-medium" 
-                    style={{ color: colors.primary }}
+            <View className="flex-row" style={{ gap: 12 }}>
+              {/* Column 1 */}
+              <View className="flex-1">
+                {column1.map((service) => (
+                  <TouchableOpacity
+                    key={service.id}
+                    className="mb-4"
+                    activeOpacity={0.7}
                   >
-                    {service}
-                  </Text>
-                </View>
-              ))}
+                    <View 
+                      className="rounded-xl overflow-hidden bg-white"
+                      style={{ 
+                        elevation: 3,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                      }}
+                    >
+                      {/* Service Image */}
+                      <View className="relative">
+                        <Image
+                          source={service.image}
+                          className="w-full h-40"
+                          resizeMode="cover"
+                        />
+                      </View>
+
+                      {/* Service Details */}
+                      <View className="p-3">
+                        {/* Service Name */}
+                        <Text 
+                          className="text-base font-semibold mb-1" 
+                          style={{ color: colors.text }}
+                          numberOfLines={2}
+                        >
+                          {service.name}
+                        </Text>
+
+                        {/* Price */}
+                        <Text 
+                          className="text-lg font-bold mb-1" 
+                          style={{ color: primaryColor }}
+                        >
+                          {formatPrice(service.price)}
+                        </Text>
+
+                        {/* Description */}
+                        <Text 
+                          className="text-xs mb-2" 
+                          style={{ color: colors.icon }}
+                          numberOfLines={2}
+                        >
+                          {service.description}
+                        </Text>
+
+                        {/* Duration Tags */}
+                        <View className="flex-row flex-wrap" style={{ gap: 4 }}>
+                          {service.duration.map((duration, index) => (
+                            <View
+                              key={index}
+                              className="px-2 py-1 rounded-full mb-1"
+                              style={{ 
+                                backgroundColor: colors.primary + '20',
+                                flexShrink: 1,
+                              }}
+                            >
+                              <Text 
+                                className="text-xs font-medium" 
+                                style={{ color: colors.primary }}
+                                numberOfLines={1}
+                              >
+                                {duration}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Column 2 */}
+              <View className="flex-1">
+                {column2.map((service) => (
+                  <TouchableOpacity
+                    key={service.id}
+                    className="mb-4"
+                    activeOpacity={0.7}
+                  >
+                    <View 
+                      className="rounded-xl overflow-hidden bg-white"
+                      style={{ 
+                        elevation: 3,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                      }}
+                    >
+                      {/* Service Image */}
+                      <View className="relative">
+                        <Image
+                          source={service.image}
+                          className="w-full h-40"
+                          resizeMode="cover"
+                        />
+                      </View>
+
+                      {/* Service Details */}
+                      <View className="p-3">
+                        {/* Service Name */}
+                        <Text 
+                          className="text-base font-semibold mb-1" 
+                          style={{ color: colors.text }}
+                          numberOfLines={2}
+                        >
+                          {service.name}
+                        </Text>
+
+                        {/* Price */}
+                        <Text 
+                          className="text-lg font-bold mb-1" 
+                          style={{ color: primaryColor }}
+                        >
+                          {formatPrice(service.price)}
+                        </Text>
+
+                        {/* Description */}
+                        <Text 
+                          className="text-xs mb-2" 
+                          style={{ color: colors.icon }}
+                          numberOfLines={2}
+                        >
+                          {service.description}
+                        </Text>
+
+                        {/* Duration Tags */}
+                        <View className="flex-row flex-wrap" style={{ gap: 4 }}>
+                          {service.duration.map((duration, index) => (
+                            <View
+                              key={index}
+                              className="px-2 py-1 rounded-full mb-1"
+                              style={{ 
+                                backgroundColor: colors.primary + '20',
+                                flexShrink: 1,
+                              }}
+                            >
+                              <Text 
+                                className="text-xs font-medium" 
+                                style={{ color: colors.primary }}
+                                numberOfLines={1}
+                              >
+                                {duration}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           </View>
         );
@@ -497,10 +715,10 @@ export default function SalonDetailsScreen({
             <View className="flex-row items-center justify-between mb-4">
               <View>
                 <View className="flex-row items-center mb-1">
+                  <Ionicons name="star" size={24} color="#F59E0B" style={{ marginRight: 8 }} />
                   <Text className="text-3xl font-bold mr-2" style={{ color: colors.text }}>
                     {salonDetails.rating}
                   </Text>
-                  <StarRating rating={salonDetails.rating} />
                 </View>
                 <Text className="text-sm" style={{ color: colors.icon }}>
                   {salonDetails.reviewCount} reviews
@@ -509,23 +727,42 @@ export default function SalonDetailsScreen({
             </View>
             <View>
               {salonDetails.reviews.map((review, index) => (
-                <View key={index} className="pb-4 mb-4 border-b" style={{ borderBottomColor: '#E5E7EB' }}>
-                  <View className="flex-row items-center mb-2">
-                    <View className="w-10 h-10 rounded-full bg-gray-200 items-center justify-center mr-2">
-                      <Text className="text-sm font-semibold" style={{ color: colors.text }}>
-                        {review.userName.charAt(0).toUpperCase()}
-                      </Text>
+                <View
+                  key={index}
+                  className="mb-4 rounded-xl overflow-hidden bg-white"
+                  style={{ 
+                    elevation: 3,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                  }}
+                >
+                  <View className="p-4">
+                    <View className="flex-row items-center mb-2">
+                      <View className="w-10 h-10 rounded-full bg-gray-200 items-center justify-center mr-2">
+                        <Text className="text-sm font-semibold" style={{ color: colors.text }}>
+                          {review.userName.charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+                      <View className="flex-1">
+                        <View className="flex-row items-center justify-between mb-1">
+                          <Text className="text-base font-semibold" style={{ color: colors.text }}>
+                            {review.userName}
+                          </Text>
+                          {review.date && (
+                            <Text className="text-xs" style={{ color: colors.icon }}>
+                              {formatRelativeDate(review.date)}
+                            </Text>
+                          )}
+                        </View>
+                        <StarRating rating={review.rating} />
+                      </View>
                     </View>
-                    <View className="flex-1">
-                      <Text className="text-base font-semibold" style={{ color: colors.text }}>
-                        {review.userName}
-                      </Text>
-                      <StarRating rating={review.rating} />
-                    </View>
+                    <Text className="text-sm mt-2" style={{ color: colors.icon }}>
+                      {review.comment}
+                    </Text>
                   </View>
-                  <Text className="text-sm mt-2" style={{ color: colors.icon }}>
-                    {review.comment}
-                  </Text>
                 </View>
               ))}
             </View>
@@ -562,41 +799,63 @@ export default function SalonDetailsScreen({
         {/* Transparent Header Overlay */}
         <TransparentHeader onBack={onBack} />
         
-        {/* Floating Heart Button */}
-        <TouchableOpacity 
-          className="absolute bottom-0 right-5 items-center justify-center rounded-full"
+        {/* Floating Heart Button - Fade out when scrolled down */}
+        <Animated.View
+          className="absolute bottom-0 right-5"
           style={{ 
-            backgroundColor: 'white',
-            width: 50,
-            height: 50,
-            marginBottom: -25, // Half overlaps into details section
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-          onPress={() => {
-            setIsFavorited(!isFavorited);
-            // TODO: Implement add to favorites functionality
-            console.log('Toggle favorite:', salonDetails.id, !isFavorited);
+            opacity: heartOpacity,
+            pointerEvents: scrollY === 0 ? 'auto' : 'none',
           }}
         >
-          <Ionicons 
-            name={isFavorited ? "heart" : "heart-outline"} 
-            size={24} 
-            color={primaryColor} 
-          />
-        </TouchableOpacity>
+          <TouchableOpacity 
+            className="items-center justify-center rounded-full"
+            style={{ 
+              backgroundColor: 'white',
+              width: 50,
+              height: 50,
+              marginBottom: -25, // Half overlaps into details section
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+            onPress={() => {
+              setIsFavorited(!isFavorited);
+              // TODO: Implement add to favorites functionality
+              console.log('Toggle favorite:', salonDetails.id, !isFavorited);
+            }}
+          >
+            <Ionicons 
+              name={isFavorited ? "heart" : "heart-outline"} 
+              size={24} 
+              color={primaryColor} 
+            />
+          </TouchableOpacity>
+        </Animated.View>
       </View>
 
       {/* Scrollable Content Area */}
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-5 py-4">
+      <ScrollView 
+        ref={mainScrollViewRef}
+        className="flex-1" 
+        showsVerticalScrollIndicator={false}
+        onScroll={(event) => {
+          const offsetY = event.nativeEvent.contentOffset.y;
+          setScrollY(offsetY);
+        }}
+        scrollEventThrottle={16}
+      >
+        <View className="px-5 pt-4">
           {/* Salon Name */}
           <Text className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
             {salonDetails.name}
           </Text>
+
+           {/* Salon Rating */}
+           <View className="mb-4">
+            <StarRating rating={salonDetails.rating} />
+          </View>
 
           {/* Address */}
           <View className="flex-row items-center mb-2">
@@ -612,11 +871,6 @@ export default function SalonDetailsScreen({
             <Text className="text-sm ml-1" style={{ color: colors.icon }}>
               {salonDetails.operatingHours}
             </Text>
-          </View>
-
-          {/* Salon Rating */}
-          <View className="mb-4">
-            <StarRating rating={salonDetails.rating} />
           </View>
 
           {/* Action Buttons: Facebook, Message, Directions */}
@@ -670,7 +924,6 @@ export default function SalonDetailsScreen({
             ref={tabScrollViewRef}
             horizontal 
             showsHorizontalScrollIndicator={false}
-            className="mb-4"
             contentContainerStyle={{ paddingRight: 0 }}
           >
             {tabs.map((tab, index) => (
@@ -705,10 +958,43 @@ export default function SalonDetailsScreen({
               </TouchableOpacity>
             ))}
           </ScrollView>
+
+          {/* Horizontal Divider */}
+          <View 
+            className="w-full"
+            style={{ 
+              height: 1, 
+              backgroundColor: '#E5E7EB',
+              marginTop: 4,
+              marginBottom: 0,
+            }} 
+          />
+        </View>
+
+        {/* Active Tab Height Measurement (off-screen) */}
+        <View
+          key={`measure-${activeTab}`}
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: screenWidth,
+            opacity: 0,
+            zIndex: -1,
+          }}
+          onLayout={(event) => {
+            const { height } = event.nativeEvent.layout;
+            if (height > 0 && height !== activeTabHeight) {
+              setActiveTabHeight(height);
+            }
+          }}
+        >
+          {renderTabContent(activeTab)}
         </View>
 
         {/* Tab Content with Swipe Gesture */}
-        <View>
+        <View style={{ height: activeTabHeight, overflow: 'hidden' }}>
           <ScrollView
             ref={contentScrollViewRef}
             horizontal
@@ -721,13 +1007,20 @@ export default function SalonDetailsScreen({
             snapToAlignment="start"
             nestedScrollEnabled={true}
             scrollEnabled={true}
-            style={{ flexGrow: 0 }}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ flexGrow: 0 }}
           >
-            {tabs.map((tab) => (
-              <View key={tab.id} style={{ width: screenWidth }}>
-                {renderTabContent(tab.id)}
-              </View>
-            ))}
+            {tabs.map((tab, index) => {
+              const activeIndex = getTabIndex(activeTab);
+              // Only render content for active tab and adjacent tabs (for smooth swiping)
+              const shouldRenderContent = Math.abs(index - activeIndex) <= 1;
+
+              return (
+                <View key={tab.id} style={{ width: screenWidth }}>
+                  {shouldRenderContent ? renderTabContent(tab.id) : <View style={{ height: 1 }} />}
+                </View>
+              );
+            })}
           </ScrollView>
         </View>
       </ScrollView>
