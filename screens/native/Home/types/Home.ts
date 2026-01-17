@@ -11,6 +11,9 @@ export interface Service {
   id: string;
   name: string;
   image: ImageSourcePropType;
+  price: number;
+  description: string;
+  duration: string[]; // e.g., ['30 mins', '60 mins']
 }
 
 export interface TopRatedSalon {

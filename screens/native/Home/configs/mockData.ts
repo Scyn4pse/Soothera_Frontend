@@ -9,11 +9,46 @@ export const specialDeals: SpecialDeal[] = [
 
 // Mock data for services
 export const services: Service[] = [
-  { id: '1', name: 'Filipino', image: require('../../../../assets/home-massage-spain.jpg') },
-  { id: '2', name: 'Swedish', image: require('../../../../assets/home-massage-spain.jpg') },
-  { id: '3', name: 'Shiatsu', image: require('../../../../assets/home-massage-spain.jpg') },
-  { id: '4', name: 'Thai', image: require('../../../../assets/home-massage-spain.jpg') },
-  { id: '5', name: 'Aromatherapy', image: require('../../../../assets/home-massage-spain.jpg') },
+  { 
+    id: '1', 
+    name: 'Filipino Massage', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 1200,
+    description: 'Traditional Filipino massage technique using deep pressure and stretching',
+    duration: ['60 mins', '90 mins', '120 mins']
+  },
+  { 
+    id: '2', 
+    name: 'Swedish Massage', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 1500,
+    description: 'Gentle, relaxing massage with long, flowing strokes',
+    duration: ['30 mins', '60 mins', '90 mins']
+  },
+  { 
+    id: '3', 
+    name: 'Shiatsu Massage', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 1800,
+    description: 'Japanese pressure point massage for energy flow and relaxation',
+    duration: ['60 mins', '90 mins']
+  },
+  { 
+    id: '4', 
+    name: 'Thai Massage', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 2000,
+    description: 'Traditional Thai massage with stretching and acupressure',
+    duration: ['60 mins', '90 mins', '120 mins']
+  },
+  { 
+    id: '5', 
+    name: 'Aromatherapy Massage', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 1600,
+    description: 'Therapeutic massage with essential oils for relaxation',
+    duration: ['30 mins', '60 mins']
+  },
 ];
 
 // Mock data for top rated salons
