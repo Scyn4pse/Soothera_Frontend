@@ -20,6 +20,32 @@ import RatingSpaScreen from './RatingSpaScreen.native';
 import RatingTherapistScreen from './RatingTherapistScreen.native';
 import ReviewChoiceModal from './components/ReviewChoiceModal';
 import { getBookingDetails } from './configs/mockBookingDetailsData';
+import BookAppointmentScreen from '../Home/BookAppointmentScreen.native';
+import PaymentSuccessfulScreen from '../Home/PaymentSuccessfulScreen.native';
+import PaymentFailedScreen from '../Home/PaymentFailedScreen.native';
+import { getSalonDetails, topRatedSalons } from '../Home/configs/mockData';
+import type { SalonDetails } from '../Home/types/SalonDetails';
+import type { Service } from '../Home/types/Home';
+import type { Therapist } from '../Home/types/SalonDetails';
+
+interface AddOn {
+  id: string;
+  name: string;
+  price: number;
+}
+
+interface BookingData {
+  service: Service | null;
+  duration: string;
+  addOns: AddOn[];
+  therapist: Therapist | null;
+  date: Date;
+  time: Date;
+  instructions: string;
+  promoCode: string;
+  salonDetails: SalonDetails;
+  totalPrice: number;
+}
 
 interface BookingsScreenProps {
   onDetailsScreenChange?: (isActive: boolean) => void;
@@ -39,6 +65,11 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
   const [showReviewChoiceModal, setShowReviewChoiceModal] = useState(false);
   const [reviewBookingId, setReviewBookingId] = useState<string | null>(null);
   const [isFromReviewButton, setIsFromReviewButton] = useState(false);
+  const [showBookAppointmentScreen, setShowBookAppointmentScreen] = useState(false);
+  const [rebookSalonDetails, setRebookSalonDetails] = useState<SalonDetails | null>(null);
+  const [showPaymentSuccessfulScreen, setShowPaymentSuccessfulScreen] = useState(false);
+  const [showPaymentFailedScreen, setShowPaymentFailedScreen] = useState(false);
+  const [bookingData, setBookingData] = useState<BookingData | null>(null);
   
   // Tab order for paging (All is first)
   const tabs: Array<'all' | 'upcoming' | 'completed' | 'cancelled'> = ['all', 'upcoming', 'completed', 'cancelled'];
@@ -179,10 +210,78 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
     // After successful submission, the screen will navigate back automatically
   };
 
-  // Handle rebook
+  // Open BookAppointmentScreen for a given spa name (map to salon details)
+  const openRebookForSpaName = (spaName: string) => {
+    // Find matching salon by name from top rated salons
+    const matchingSalon = topRatedSalons.find((salon) => salon.name === spaName);
+    if (!matchingSalon) {
+      console.warn('No matching salon found for spa name:', spaName);
+      return;
+    }
+
+    const salonDetails = getSalonDetails(matchingSalon.id);
+    if (!salonDetails) {
+      console.warn('No salon details found for salon id:', matchingSalon.id);
+      return;
+    }
+
+    setRebookSalonDetails(salonDetails);
+    setShowBookAppointmentScreen(true);
+  };
+
+  // Handle rebook from booking details footer button
   const handleRebook = () => {
-    // TODO: Implement rebook functionality
-    console.log('Rebook:', selectedBookingId);
+    if (!selectedBookingId) return;
+    const bookingDetails = getBookingDetails(selectedBookingId);
+    if (!bookingDetails) return;
+    openRebookForSpaName(bookingDetails.spaName);
+  };
+
+  // Handle rebook from booking card button
+  const handleRebookFromCard = (booking: Booking) => {
+    openRebookForSpaName(booking.spaName);
+  };
+
+  // Handle payment success from BookAppointmentScreen
+  const handlePaymentSuccess = (data: BookingData) => {
+    setBookingData(data);
+    setShowBookAppointmentScreen(false);
+    setShowPaymentSuccessfulScreen(true);
+  };
+
+  // Handle back from payment successful screen
+  const handleBackFromPaymentSuccessful = () => {
+    setShowPaymentSuccessfulScreen(false);
+    setBookingData(null);
+  };
+
+  // Handle home from payment successful screen - temporarily navigate to payment failed screen
+  const handleHomeFromPaymentSuccessful = () => {
+    setShowPaymentSuccessfulScreen(false);
+    setShowPaymentFailedScreen(true);
+    // Keep bookingData for the failed screen
+  };
+
+  // Handle back from payment failed screen
+  const handleBackFromPaymentFailed = () => {
+    setShowPaymentFailedScreen(false);
+    setBookingData(null);
+  };
+
+  // Handle try again from payment failed screen
+  const handleTryAgainFromPaymentFailed = () => {
+    setShowPaymentFailedScreen(false);
+    // Navigate back to booking screen
+    if (rebookSalonDetails) {
+      setShowBookAppointmentScreen(true);
+    }
+  };
+
+  // Handle book appointment completion (fallback if onPaymentSuccess not provided)
+  const handleBookAppointmentComplete = () => {
+    setShowBookAppointmentScreen(false);
+    // TODO: Navigate to bookings screen or show success message
+    console.log('Booking completed');
   };
 
   // Handle reschedule (just a placeholder callback, modal is handled in BookingDetailsScreen)
@@ -223,8 +322,15 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Notify parent when details screen is shown/hidden
   useEffect(() => {
-    onDetailsScreenChange?.(selectedBookingId !== null || showRatingScreen || showTherapistRatingScreen);
-  }, [selectedBookingId, showRatingScreen, showTherapistRatingScreen, onDetailsScreenChange]);
+    onDetailsScreenChange?.(
+      selectedBookingId !== null ||
+      showRatingScreen ||
+      showTherapistRatingScreen ||
+      showBookAppointmentScreen ||
+      showPaymentSuccessfulScreen ||
+      showPaymentFailedScreen
+    );
+  }, [selectedBookingId, showRatingScreen, showTherapistRatingScreen, showBookAppointmentScreen, showPaymentSuccessfulScreen, showPaymentFailedScreen, onDetailsScreenChange]);
 
   // Handle ScrollView layout to set initial position immediately
   const handleScrollViewLayout = () => {
@@ -254,6 +360,43 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
       }
     }
   }, [selectedBookingId, activeTab, screenWidth]);
+
+  // If payment failed screen is active, show payment failed screen
+  if (showPaymentFailedScreen && bookingData) {
+    return (
+      <PaymentFailedScreen
+        bookingData={bookingData}
+        onBack={handleBackFromPaymentFailed}
+        onTryAgain={handleTryAgainFromPaymentFailed}
+      />
+    );
+  }
+
+  // If payment successful screen is active, show payment successful screen
+  if (showPaymentSuccessfulScreen && bookingData) {
+    return (
+      <PaymentSuccessfulScreen
+        bookingData={bookingData}
+        onBack={handleBackFromPaymentSuccessful}
+        onHome={handleHomeFromPaymentSuccessful}
+      />
+    );
+  }
+
+  // If BookAppointmentScreen is active from rebook, show it above everything else
+  if (showBookAppointmentScreen && rebookSalonDetails) {
+    return (
+      <BookAppointmentScreen
+        salonDetails={rebookSalonDetails}
+        onBack={() => {
+          setShowBookAppointmentScreen(false);
+          setRebookSalonDetails(null);
+        }}
+        onComplete={handleBookAppointmentComplete}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
+    );
+  }
 
   // If therapist rating screen is active, show therapist rating screen
   if (showTherapistRatingScreen && therapistRatingBookingId) {
@@ -345,6 +488,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
                     tabType={tab}
                     onPress={() => handleBookingPress(booking.id)}
                     onReview={handleReviewPress}
+                    onRebook={handleRebookFromCard}
                   />
                 ))
               ) : (

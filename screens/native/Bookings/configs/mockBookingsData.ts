@@ -9,7 +9,7 @@ export const allBookings: Booking[] = [
   {
     id: '1',
     serviceName: 'Aromatherapy Massage',
-    spaName: 'Tranquil Oasis Spa',
+    spaName: 'Tranquil Touch',
     status: BOOKING_STATUS.CONFIRMED, // 0
     date: '01/20/2026',
     time: '10:00 AM - 11:00 AM',
@@ -18,7 +18,7 @@ export const allBookings: Booking[] = [
   {
     id: '2',
     serviceName: 'Deep Tissue Therapy',
-    spaName: 'Urban Retreat',
+    spaName: 'Style Studio',
     status: BOOKING_STATUS.PENDING, // 1
     date: '01/25/2026',
     time: '02:00 PM - 03:30 PM',
@@ -27,7 +27,7 @@ export const allBookings: Booking[] = [
   {
     id: '3',
     serviceName: 'Hot Stone Massage',
-    spaName: 'Serenity Spa Center',
+    spaName: 'Serenity Spa',
     status: BOOKING_STATUS.COMPLETED, // 2
     date: '04/21/2024',
     time: '03:00 PM - 04:00 PM',
@@ -36,7 +36,7 @@ export const allBookings: Booking[] = [
   {
     id: '4',
     serviceName: 'Swedish Massage',
-    spaName: 'The Royale Spa',
+    spaName: 'Salon Elite',
     status: BOOKING_STATUS.CANCELLED, // 3
     date: '03/12/2024',
     time: '11:30 AM - 12:30 PM',

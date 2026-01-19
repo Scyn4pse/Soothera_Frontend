@@ -98,6 +98,14 @@ export const services: Service[] = [
     description: 'Therapeutic massage focusing on pressure points in the feet to promote overall body wellness.',
     duration: ['35 mins', '45 mins']
   },
+  { 
+    id: '12', 
+    name: 'Deep Tissue Therapy', 
+    image: require('../../../../assets/home-massage-spain.jpg'),
+    price: 700,
+    description: 'A focused massage technique that targets deeper layers of muscles and connective tissue to relieve chronic tension.',
+    duration: ['60 mins', '90 mins']
+  },
 ];
 
 // Mock data for top rated salons

@@ -13,6 +13,7 @@ interface BookingCardProps {
   tabType: TabType;
   onPress?: () => void;
   onReview?: (bookingId: string) => void;
+  onRebook?: (booking: Booking) => void;
 }
 
 const getStatusColor = (status: number, colors: any) => {
@@ -29,12 +30,13 @@ const getStatusColor = (status: number, colors: any) => {
   }
 };
 
-export default function BookingCard({ booking, tabType, onPress, onReview }: BookingCardProps) {
+export default function BookingCard({ booking, tabType, onPress, onReview, onRebook }: BookingCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
   // Determine which buttons to show based on booking status when in 'all' tab
   const showUpcomingButtons = tabType === 'upcoming' || (tabType === 'all' && (booking.status === BOOKING_STATUS.CONFIRMED || booking.status === BOOKING_STATUS.PENDING));
+  const showManageBookingButton = showUpcomingButtons && booking.status !== BOOKING_STATUS.CONFIRMED;
   const showCompletedButtons = tabType === 'completed' || (tabType === 'all' && booking.status === BOOKING_STATUS.COMPLETED);
   const showCancelledButtons = tabType === 'cancelled' || (tabType === 'all' && booking.status === BOOKING_STATUS.CANCELLED);
   const showStatusTag = tabType === 'upcoming' || (tabType === 'all' && (booking.status === BOOKING_STATUS.CONFIRMED || booking.status === BOOKING_STATUS.PENDING || booking.status === BOOKING_STATUS.COMPLETED || booking.status === BOOKING_STATUS.CANCELLED));
@@ -121,21 +123,27 @@ export default function BookingCard({ booking, tabType, onPress, onReview }: Boo
         {showUpcomingButtons && (
           <>
             <TouchableOpacity
-              className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl mr-2 border"
-              style={{ borderColor: colors.icon, backgroundColor: 'white' }}
+              className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl mr-2"
+              style={{ backgroundColor: primaryColor }}
             >
-              <Ionicons name="location-outline" size={16} color={colors.text} />
-              <Text className="text-sm font-semibold ml-2" style={{ color: colors.text }}>
+              <Ionicons name="location-outline" size={16} color="white" />
+              <Text className="text-sm font-semibold ml-2" style={{ color: 'white' }}>
                 Directions
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl"
-              style={{ backgroundColor: primaryColor }}
-            >
-              <Ionicons name="checkmark-circle-outline" size={16} color="white" />
-              <Text className="text-sm text-white font-semibold ml-2">Manage Booking</Text>
-            </TouchableOpacity>
+            {showManageBookingButton && (
+              <TouchableOpacity
+                className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl border"
+                style={{ borderColor: colors.icon, backgroundColor: 'white' }}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  onPress?.();
+                }}
+              >
+                <Ionicons name="checkmark-circle-outline" size={16} color={colors.text} />
+                <Text className="text-sm font-semibold ml-2" style={{ color: colors.text }}>Manage Booking</Text>
+              </TouchableOpacity>
+            )}
           </>
         )}
 
@@ -144,6 +152,10 @@ export default function BookingCard({ booking, tabType, onPress, onReview }: Boo
             <TouchableOpacity
               className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl mr-2"
               style={{ backgroundColor: primaryColor }}
+              onPress={(e) => {
+                e.stopPropagation();
+                onRebook?.(booking);
+              }}
             >
               <Ionicons name="refresh" size={16} color="white" />
               <Text className="text-sm text-white font-semibold ml-2">Re-book</Text>
@@ -168,6 +180,10 @@ export default function BookingCard({ booking, tabType, onPress, onReview }: Boo
           <TouchableOpacity
             className="flex-1 flex-row items-center justify-center px-4 py-2 rounded-xl"
             style={{ backgroundColor: primaryColor }}
+            onPress={(e) => {
+              e.stopPropagation();
+              onRebook?.(booking);
+            }}
           >
             <Ionicons name="refresh" size={16} color="white" />
             <Text className="text-sm text-white font-semibold ml-2">Re-book</Text>
