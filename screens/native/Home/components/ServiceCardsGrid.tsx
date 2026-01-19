@@ -8,9 +8,10 @@ import { Colors, primaryColor } from '@/constants/theme';
 interface ServiceCardsGridProps {
   services: Service[];
   contentContainerStyle?: object;
+  onServicePress?: (service: Service) => void;
 }
 
-export function ServiceCardsGrid({ services, contentContainerStyle }: ServiceCardsGridProps) {
+export function ServiceCardsGrid({ services, contentContainerStyle, onServicePress }: ServiceCardsGridProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -35,6 +36,7 @@ export function ServiceCardsGrid({ services, contentContainerStyle }: ServiceCar
       key={service.id}
       className="mb-4"
       activeOpacity={0.7}
+      onPress={() => onServicePress?.(service)}
     >
       <View 
         className="rounded-xl overflow-hidden bg-white"

@@ -6,12 +6,14 @@ import { primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
 import { services } from '../../configs/mockData';
+import { Service } from '../../types/Home';
 
 interface ServicesProps {
   onSeeAll?: () => void;
+  onServicePress?: (service: Service) => void;
 }
 
-export function Services({ onSeeAll }: ServicesProps = {}) {
+export function Services({ onSeeAll, onServicePress }: ServicesProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [isAtEnd, setIsAtEnd] = useState(false);
@@ -88,7 +90,12 @@ export function Services({ onSeeAll }: ServicesProps = {}) {
           scrollEventThrottle={16}
         >
           {services.slice(0, 5).map((service) => (
-            <View key={service.id} className="mr-4 items-center">
+            <TouchableOpacity
+              key={service.id}
+              className="mr-4 items-center"
+              activeOpacity={0.8}
+              onPress={() => onServicePress?.(service)}
+            >
               <View className="w-24 h-24 rounded-xl overflow-hidden mb-2 bg-gray-100">
                 <Image
                   source={service.image}
@@ -99,7 +106,7 @@ export function Services({ onSeeAll }: ServicesProps = {}) {
               <Text className="text-sm font-medium text-center" style={{ color: colors.text }}>
                 {service.name}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
 

@@ -13,6 +13,7 @@ interface SearchBarWithBackProps {
   autoFocus?: boolean;
   onFiltersChange?: (filters: Record<string, any>) => void;
   autoOpenFilter?: boolean;
+  enableFilters?: boolean;
 }
 
 export function SearchBarWithBack({ 
@@ -22,7 +23,8 @@ export function SearchBarWithBack({
   onChangeText,
   autoFocus = false,
   onFiltersChange,
-  autoOpenFilter = false
+  autoOpenFilter = false,
+  enableFilters = true
 }: SearchBarWithBackProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -42,6 +44,7 @@ export function SearchBarWithBack({
     (key) => activeFilters[key] === true
   ) || 'salon';
   const dynamicPlaceholder = getPlaceholderForFilter(selectedFilterId);
+  const placeholderToUse = enableFilters ? dynamicPlaceholder : initialPlaceholder;
 
   useEffect(() => {
     if (autoFocus && inputRef.current) {
@@ -54,21 +57,22 @@ export function SearchBarWithBack({
   }, [autoFocus]);
 
   useEffect(() => {
-    if (autoOpenFilter) {
+    if (autoOpenFilter && enableFilters) {
       // Small delay to ensure the screen is fully mounted before opening modal
       const timer = setTimeout(() => {
         setShowFilterModal(true);
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [autoOpenFilter]);
+  }, [autoOpenFilter, enableFilters]);
 
   const handleFiltersApply = (filters: Record<string, any>) => {
     setActiveFilters(filters);
     onFiltersChange?.(filters);
   };
 
-  const hasActiveFilters = Object.values(activeFilters).some((value) => value === true);
+  const hasActiveFilters =
+    enableFilters && Object.values(activeFilters).some((value) => value === true);
 
   return (
     <>
@@ -87,7 +91,7 @@ export function SearchBarWithBack({
           <Ionicons name="search-outline" size={20} color={colors.icon} />
           <TextInput
             ref={inputRef}
-            placeholder={dynamicPlaceholder}
+            placeholder={placeholderToUse}
             placeholderTextColor={colors.icon}
             value={value}
             onChangeText={onChangeText}
@@ -98,32 +102,36 @@ export function SearchBarWithBack({
         </View>
 
         {/* Filter Button */}
-        <TouchableOpacity
-          className="w-12 h-12 rounded-xl items-center justify-center ml-3"
-          style={{ backgroundColor: primaryColor }}
-          onPress={() => setShowFilterModal(true)}
-          activeOpacity={0.7}
-        >
-          <Ionicons 
-            name="options-outline" 
-            size={24} 
-            color="white" 
-          />
-          {hasActiveFilters && (
-            <View
-              className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
-              style={{ backgroundColor: '#EF4444' }}
+        {enableFilters && (
+          <TouchableOpacity
+            className="w-12 h-12 rounded-xl items-center justify-center ml-3"
+            style={{ backgroundColor: primaryColor }}
+            onPress={() => setShowFilterModal(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons 
+              name="options-outline" 
+              size={24} 
+              color="white" 
             />
-          )}
-        </TouchableOpacity>
+            {hasActiveFilters && (
+              <View
+                className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
+                style={{ backgroundColor: '#EF4444' }}
+              />
+            )}
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Filter Modal */}
-      <FilterModal
-        visible={showFilterModal}
-        onApply={handleFiltersApply}
-        onCancel={() => setShowFilterModal(false)}
-      />
+      {enableFilters && (
+        <FilterModal
+          visible={showFilterModal}
+          onApply={handleFiltersApply}
+          onCancel={() => setShowFilterModal(false)}
+        />
+      )}
     </>
   );
 }

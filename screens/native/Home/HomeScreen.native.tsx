@@ -191,7 +191,16 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
 
   // If services screen is active, show services screen
   if (showServicesScreen) {
-    return <ServicesScreen onBack={() => setShowServicesScreen(false)} />;
+    return (
+      <ServicesScreen
+        onBack={() => setShowServicesScreen(false)}
+        onServicePress={() => {
+          setShowServicesScreen(false);
+          setShowTopRatedSalonsScreen(true);
+          setAutoOpenFilterModal(false);
+        }}
+      />
+    );
   }
 
   // If top rated salons screen is active, show top rated salons screen
@@ -235,7 +244,13 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
         <SpecialDeals />
 
         {/* Services Section */}
-        <Services onSeeAll={() => setShowServicesScreen(true)} />
+        <Services
+          onSeeAll={() => setShowServicesScreen(true)}
+          onServicePress={() => {
+            setAutoOpenFilterModal(false);
+            setShowTopRatedSalonsScreen(true);
+          }}
+        />
 
         {/* Top Rated Salons Section */}
         <TopRatedSalons 
