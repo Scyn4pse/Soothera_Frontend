@@ -3,7 +3,7 @@ import { View, TextInput, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, primaryColor } from '@/constants/theme';
-import { FilterModal } from './FilterModal';
+import { FilterModal, getPlaceholderForFilter } from './FilterModal';
 
 interface SearchBarWithBackProps {
   onBack?: () => void;
@@ -17,7 +17,7 @@ interface SearchBarWithBackProps {
 
 export function SearchBarWithBack({ 
   onBack, 
-  placeholder = "Search Services...",
+  placeholder: initialPlaceholder = "Search Salons...",
   value,
   onChangeText,
   autoFocus = false,
@@ -28,7 +28,20 @@ export function SearchBarWithBack({
   const colors = Colors[colorScheme ?? 'light'];
   const inputRef = useRef<TextInput>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({
+    salon: true,
+    services: false,
+    ratings: false,
+    therapists: false,
+    location: false,
+    priceRange: false,
+  });
+
+  // Get the selected filter ID and compute placeholder
+  const selectedFilterId = Object.keys(activeFilters).find(
+    (key) => activeFilters[key] === true
+  ) || 'salon';
+  const dynamicPlaceholder = getPlaceholderForFilter(selectedFilterId);
 
   useEffect(() => {
     if (autoFocus && inputRef.current) {
@@ -74,7 +87,7 @@ export function SearchBarWithBack({
           <Ionicons name="search-outline" size={20} color={colors.icon} />
           <TextInput
             ref={inputRef}
-            placeholder={placeholder}
+            placeholder={dynamicPlaceholder}
             placeholderTextColor={colors.icon}
             value={value}
             onChangeText={onChangeText}

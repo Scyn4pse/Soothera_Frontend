@@ -18,7 +18,7 @@ export interface FilterModalProps {
   onCancel: () => void;
 }
 
-const filterCategories: FilterCategory[] = [
+export const filterCategories: FilterCategory[] = [
   { id: 'salon', label: 'Salon', icon: 'business-outline' },
   { id: 'services', label: 'Services', icon: 'cut-outline' },
   { id: 'ratings', label: 'Ratings', icon: 'star-outline' },
@@ -26,6 +26,26 @@ const filterCategories: FilterCategory[] = [
   { id: 'location', label: 'Location', icon: 'location-outline' },
   { id: 'priceRange', label: 'Price Range', icon: 'cash-outline' },
 ];
+
+// Mapping filter IDs to placeholder text
+export const getPlaceholderForFilter = (filterId: string | null): string => {
+  switch (filterId) {
+    case 'salon':
+      return 'Search Salons...';
+    case 'services':
+      return 'Search Services...';
+    case 'ratings':
+      return 'Search by Ratings...';
+    case 'therapists':
+      return 'Search Therapists...';
+    case 'location':
+      return 'Search by Location...';
+    case 'priceRange':
+      return 'Search by Price Range...';
+    default:
+      return 'Search Salons...';
+  }
+};
 
 export function FilterModal({ visible, onApply, onCancel }: FilterModalProps) {
   const colorScheme = useColorScheme();
@@ -42,8 +62,11 @@ export function FilterModal({ visible, onApply, onCancel }: FilterModalProps) {
   });
 
   const toggleFilter = (categoryId: string) => {
+    // Check if this filter is already selected
+    const isAlreadySelected = selectedFilters[categoryId] === true;
+    
     // Only allow one selection at a time (radio button behavior)
-    setSelectedFilters({
+    const newFilters = {
       salon: false,
       services: false,
       ratings: false,
@@ -51,27 +74,32 @@ export function FilterModal({ visible, onApply, onCancel }: FilterModalProps) {
       location: false,
       priceRange: false,
       [categoryId]: true,
-    });
-  };
-
-  const handleApply = () => {
-    onApply(selectedFilters);
-    onCancel();
+    };
+    
+    setSelectedFilters(newFilters);
+    
+    // If selecting a different filter, apply immediately and close modal
+    if (!isAlreadySelected) {
+      onApply(newFilters);
+      onCancel();
+    }
   };
 
   const handleReset = () => {
     // Reset to default state (salon selected)
-    setSelectedFilters({
+    const resetFilters = {
       salon: true,
       services: false,
       ratings: false,
       therapists: false,
       location: false,
       priceRange: false,
-    });
+    };
+    setSelectedFilters(resetFilters);
+    // Apply immediately and close modal
+    onApply(resetFilters);
+    onCancel();
   };
-
-  const hasActiveFilters = Object.values(selectedFilters).some((value) => value === true);
 
   return (
     <Modal
@@ -184,33 +212,23 @@ export function FilterModal({ visible, onApply, onCancel }: FilterModalProps) {
               </ScrollView>
 
               {/* Footer Buttons */}
-              <View className="flex-row gap-3 px-5 pb-5 pt-4 border-t"
+              <View className="px-5 pb-5 pt-4 border-t"
                 style={{ borderTopColor: isDark ? '#3a3a3a' : '#E5E7EB' }}
               >
                 <TouchableOpacity
-                  className={`flex-1 border rounded-xl py-3.5 ${
+                  className={`w-full border rounded-xl py-3.5 ${
                     isDark ? 'border-[#3a3a3a]' : 'border-gray-300'
                   }`}
                   onPress={handleReset}
                   activeOpacity={0.7}
-                  disabled={!hasActiveFilters}
-                  style={{ opacity: hasActiveFilters ? 1 : 0.5 }}
+                  disabled={selectedFilters.salon === true}
+                  style={{ opacity: selectedFilters.salon !== true ? 1 : 0.5 }}
                 >
                   <Text
                     className="font-semibold text-center"
                     style={{ color: colors.text }}
                   >
                     Reset
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="flex-1 rounded-xl py-3.5"
-                  style={{ backgroundColor: primaryColor }}
-                  onPress={handleApply}
-                  activeOpacity={0.7}
-                >
-                  <Text className="text-white font-semibold text-center">
-                    Apply Filters
                   </Text>
                 </TouchableOpacity>
               </View>

@@ -16,7 +16,6 @@ export default function TopRatedSalonsScreen({ onBack, onSalonPress, autoOpenFil
       {/* Search Bar with Back Button */}
       <SearchBarWithBack 
         onBack={onBack} 
-        placeholder="Search Salons..." 
         autoFocus={true}
         autoOpenFilter={autoOpenFilter}
       />
