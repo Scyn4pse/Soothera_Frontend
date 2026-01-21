@@ -219,8 +219,9 @@ export default function NativeNavigator() {
 
   // Home navigation handlers
   const openHomeServices = () => setHomeServicesVisible(true);
-  const openHomeTopRated = (autoOpenFilter?: boolean) => {
-    setHomeTopRatedAutoFilter(!!autoOpenFilter);
+  const openHomeTopRated = (options?: { autoOpenFilter?: boolean; autoFocusSearch?: boolean }) => {
+    setHomeTopRatedAutoFilter(!!options?.autoOpenFilter);
+    setHomeTopRatedAutoFocus(!!options?.autoFocusSearch);
     setHomeTopRatedVisible(true);
   };
   const openHomeSalon = (salonId: string) => setHomeSelectedSalonId(salonId);
@@ -242,9 +243,10 @@ export default function NativeNavigator() {
     );
   };
   const closeHomeTopRated = () => {
-    homeTopRatedTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
-      runOnJS(setHomeTopRatedVisible)(false)
-    );
+    homeTopRatedTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () => {
+      runOnJS(setHomeTopRatedVisible)(false);
+      runOnJS(setHomeTopRatedAutoFocus)(false);
+    });
   };
   const closeHomeSalon = () => {
     homeSalonTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
@@ -427,7 +429,7 @@ export default function NativeNavigator() {
             useNavigatorOverlays
             onNavigateToProfile={() => setActiveTab('profile')}
             onNavigateServices={openHomeServices}
-            onNavigateTopRated={({ autoOpenFilter } = {}) => openHomeTopRated(autoOpenFilter)}
+            onNavigateTopRated={(options) => openHomeTopRated(options)}
             onNavigateSalonDetails={openHomeSalon}
             onNavigateBookAppointment={openHomeBook}
             onNavigateNotifications={openHomeNotifications}
