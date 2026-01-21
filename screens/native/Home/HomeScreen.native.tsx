@@ -53,6 +53,7 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
   const insets = useSafeAreaInsets();
   const [showServicesScreen, setShowServicesScreen] = useState(false);
   const [showTopRatedSalonsScreen, setShowTopRatedSalonsScreen] = useState(false);
+  const [topRatedReturnToServices, setTopRatedReturnToServices] = useState(false);
   const [autoOpenFilterModal, setAutoOpenFilterModal] = useState(false);
   const [selectedSalonId, setSelectedSalonId] = useState<string | null>(null);
   const [showBookAppointmentScreen, setShowBookAppointmentScreen] = useState(false);
@@ -322,15 +323,11 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
               );
             }}
             onServicePress={() => {
-              servicesTranslateX.value = withTiming(
-                SCREEN_WIDTH,
-                { duration: TRANSITION_DURATION },
-                () => {
-                  runOnJS(setShowServicesScreen)(false);
-                  runOnJS(setShowTopRatedSalonsScreen)(true);
-                  runOnJS(setAutoOpenFilterModal)(false);
-                }
-              );
+              // IMPORTANT: don't close Services first, otherwise Home flashes.
+              // Instead: keep Services mounted underneath and slide TopRated in on top.
+              setTopRatedReturnToServices(true);
+              setAutoOpenFilterModal(false);
+              setShowTopRatedSalonsScreen(true);
             }}
           />
         </Animated.View>
@@ -359,6 +356,7 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
                 () => {
                   runOnJS(setShowTopRatedSalonsScreen)(false);
                   runOnJS(setAutoOpenFilterModal)(false);
+                  runOnJS(setTopRatedReturnToServices)(false);
                 }
               );
             }}
