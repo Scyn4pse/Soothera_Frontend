@@ -36,7 +36,7 @@ interface AddOn {
   price: number;
 }
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 5;
 
 // Mock add-ons data
 const addOns: AddOn[] = [
@@ -71,11 +71,9 @@ export default function BookAppointmentScreen({
   // Step 3: Therapist preference
   const [selectedTherapist, setSelectedTherapist] = useState<string | null>(null); // null means "Any Therapist"
 
-  // Step 4: Date & Time
+  // Step 4: Date & Time & Promo Code
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedTime, setSelectedTime] = useState<Date>(new Date());
-
-  // Step 5: Promo Code
   const [promoCode, setPromoCode] = useState('');
 
   // Refs for ScrollViews
@@ -200,9 +198,9 @@ export default function BookAppointmentScreen({
     }
   }, [selectedService, selectedDuration]);
 
-  // Handle keyboard show/hide for steps 2 and 5
+  // Handle keyboard show/hide for steps 2 and 4
   useEffect(() => {
-    if (currentStep !== 2 && currentStep !== 5) {
+    if (currentStep !== 2 && currentStep !== 4) {
       setKeyboardHeight(0);
       return;
     }
@@ -606,7 +604,7 @@ export default function BookAppointmentScreen({
     );
   };
 
-  // Render Step 4: Date & Time
+  // Render Step 4: Date & Time & Promo Code
   const renderStep4 = () => {
     const monthNames = [
       'January', 'February', 'March', 'April', 'May', 'June',
@@ -716,42 +714,38 @@ export default function BookAppointmentScreen({
             })}
           </ScrollView>
         </View>
+
+        {/* Promo Code Section */}
+        <View className="mt-6">
+          <Text className="text-lg font-semibold mb-4" style={{ color: colors.text }}>
+            Promo Code (Optional)
+          </Text>
+          <TextInput
+            ref={promoCodeInputRef}
+            className="p-4 rounded-xl border text-base"
+            style={{
+              borderColor: isDark ? '#3a3a3a' : '#E5E7EB',
+              backgroundColor: isDark ? '#1f1f1f' : '#F9FAFB',
+              color: colors.text,
+            }}
+            placeholder="Enter promo code"
+            placeholderTextColor={colors.icon}
+            value={promoCode}
+            onChangeText={setPromoCode}
+            onFocus={() => {
+              // Scroll to input when focused
+              setTimeout(() => {
+                mainScrollViewRef.current?.scrollToEnd({ animated: true });
+              }, 300);
+            }}
+          />
+        </View>
       </View>
     );
   };
 
-  // Render Step 5: Promo Code
+  // Render Step 5: Booking Summary
   const renderStep5 = () => {
-    return (
-      <View className="px-5 py-4">
-        <Text className="text-lg font-semibold mb-4" style={{ color: colors.text }}>
-          Promo Code (Optional)
-        </Text>
-        <TextInput
-          ref={promoCodeInputRef}
-          className="p-4 rounded-xl border text-base"
-          style={{
-            borderColor: isDark ? '#3a3a3a' : '#E5E7EB',
-            backgroundColor: isDark ? '#1f1f1f' : '#F9FAFB',
-            color: colors.text,
-          }}
-          placeholder="Enter promo code"
-          placeholderTextColor={colors.icon}
-          value={promoCode}
-          onChangeText={setPromoCode}
-          onFocus={() => {
-            // Scroll to input when focused
-            setTimeout(() => {
-              mainScrollViewRef.current?.scrollToEnd({ animated: true });
-            }, 300);
-          }}
-        />
-      </View>
-    );
-  };
-
-  // Render Step 6: Booking Summary
-  const renderStep6 = () => {
     const totalPrice = calculatePrice();
     const selectedTherapistData = selectedTherapist
       ? salonDetails.therapists.find(t => t.id === selectedTherapist)
@@ -1037,8 +1031,6 @@ export default function BookAppointmentScreen({
         return renderStep4();
       case 5:
         return renderStep5();
-      case 6:
-        return renderStep6();
       default:
         return null;
     }
@@ -1054,10 +1046,8 @@ export default function BookAppointmentScreen({
       case 3:
         return true; // Therapist selection is optional (can be "Any Therapist")
       case 4:
-        return true; // Date and time are always selected
+        return true; // Date and time are always selected, promo code is optional
       case 5:
-        return true; // Promo code is optional
-      case 6:
         return true; // Summary step
       default:
         return false;
@@ -1117,7 +1107,7 @@ export default function BookAppointmentScreen({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ 
-          paddingBottom: (currentStep === 2 || currentStep === 5) && keyboardHeight > 0 
+          paddingBottom: (currentStep === 2 || currentStep === 4) && keyboardHeight > 0 
             ? keyboardHeight + (80 + Math.max(insets.bottom, 16))
             : undefined
         }}
@@ -1127,12 +1117,12 @@ export default function BookAppointmentScreen({
 
       {/* Footer */}
       <View
-        className={`px-5 py-4 border-t ${(currentStep === 2 || currentStep === 5) && keyboardHeight > 0 ? 'absolute left-0 right-0' : ''}`}
+        className={`px-5 py-4 border-t ${(currentStep === 2 || currentStep === 4) && keyboardHeight > 0 ? 'absolute left-0 right-0' : ''}`}
         style={{
           borderTopColor: isDark ? '#3a3a3a' : '#E5E7EB',
           paddingBottom: insets.bottom || 16,
           backgroundColor: 'white',
-          ...((currentStep === 2 || currentStep === 5) && keyboardHeight > 0 ? {
+          ...((currentStep === 2 || currentStep === 4) && keyboardHeight > 0 ? {
             bottom: keyboardHeight,
           } : {}),
         }}
