@@ -42,12 +42,13 @@ interface InboxScreenProps {
   onNavigateToProfile?: () => void;
   useNavigatorOverlays?: boolean;
   onNavigateChatRoom?: (conversation: Conversation) => void;
+  onNavigateNotifications?: () => void;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TRANSITION_DURATION = 300;
 
-export default function InboxScreen({ onChatRoomChange, onNavigateToProfile, useNavigatorOverlays = false, onNavigateChatRoom }: InboxScreenProps = {}) {
+export default function InboxScreen({ onChatRoomChange, onNavigateToProfile, useNavigatorOverlays = false, onNavigateChatRoom, onNavigateNotifications }: InboxScreenProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
@@ -110,7 +111,10 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile, use
   <View className="flex-1 bg-white dark:bg-[#151718]">
       {/* Header Section */}
       <RisingItem delay={0}>
-        <Header onProfilePress={onNavigateToProfile} />
+        <Header 
+          onProfilePress={onNavigateToProfile}
+          onNotificationPress={onNavigateNotifications}
+        />
       </RisingItem>
 
       {/* Search Bar */}

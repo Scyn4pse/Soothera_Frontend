@@ -65,6 +65,7 @@ export default function NativeNavigator() {
   const homeTopRatedTx = useSharedValue(SCREEN_WIDTH);
   const homeSalonTx = useSharedValue(SCREEN_WIDTH);
   const homeBookTx = useSharedValue(SCREEN_WIDTH);
+  const homeNotificationsTx = useSharedValue(SCREEN_WIDTH);
 
   // Bookings overlays
   const [bookingSelectedId, setBookingSelectedId] = useState<string | null>(null);
@@ -125,6 +126,10 @@ export default function NativeNavigator() {
     homeBookTx.value = withTiming(homeBookVisible ? 0 : SCREEN_WIDTH, { duration: TRANSITION_DURATION });
   }, [homeBookVisible, homeBookTx]);
 
+  useEffect(() => {
+    homeNotificationsTx.value = withTiming(homeNotificationsVisible ? 0 : SCREEN_WIDTH, { duration: TRANSITION_DURATION });
+  }, [homeNotificationsVisible, homeNotificationsTx]);
+
   const homeServicesStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: homeServicesTx.value }],
   }));
@@ -136,6 +141,9 @@ export default function NativeNavigator() {
   }));
   const homeBookStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: homeBookTx.value }],
+  }));
+  const homeNotificationsStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: homeNotificationsTx.value }],
   }));
 
   // Bookings animations
@@ -182,6 +190,12 @@ export default function NativeNavigator() {
     setHomeBookVisible(true);
   };
   const openHomeNotifications = () => setHomeNotificationsVisible(true);
+
+  const closeHomeNotifications = () => {
+    homeNotificationsTx.value = withTiming(SCREEN_WIDTH, { duration: TRANSITION_DURATION }, () =>
+      runOnJS(setHomeNotificationsVisible)(false)
+    );
+  };
 
   const closeHomeServices = () => {
     homeServicesTx.value = withTiming(SCREEN_WIDTH, { duration: TRANSITION_DURATION }, () =>
@@ -279,6 +293,10 @@ export default function NativeNavigator() {
         handleHomePaymentSuccessBack();
         return true;
       }
+      if (homeNotificationsVisible) {
+        closeHomeNotifications();
+        return true;
+      }
       if (homeBookVisible) {
         closeHomeBook();
         return true;
@@ -321,6 +339,7 @@ export default function NativeNavigator() {
     homeBookVisible,
     homePaymentFailed,
     homePaymentSuccess,
+    homeNotificationsVisible,
     homeSelectedSalonId,
     homeServicesVisible,
     homeTopRatedVisible,
@@ -329,6 +348,7 @@ export default function NativeNavigator() {
     bookingRatingTherapistId,
     closeChat,
     closeHomeBook,
+    closeHomeNotifications,
     closeHomeSalon,
     closeHomeServices,
     closeHomeTopRated,
@@ -362,6 +382,7 @@ export default function NativeNavigator() {
             onNavigateBookingDetails={openBookingDetails}
             onNavigateRatingSpa={openBookingRatingSpa}
             onNavigateRatingTherapist={openBookingRatingTherapist}
+            onNavigateNotifications={openHomeNotifications}
           />
         </RisingPage>
 
@@ -370,6 +391,7 @@ export default function NativeNavigator() {
             useNavigatorOverlays
             onNavigateToProfile={() => setActiveTab('profile')}
             onNavigateChatRoom={openChat}
+            onNavigateNotifications={openHomeNotifications}
           />
         </RisingPage>
 
@@ -483,18 +505,21 @@ export default function NativeNavigator() {
       )}
 
       {homeNotificationsVisible && (
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 9,
-          }}
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 9,
+            },
+            homeNotificationsStyle,
+          ]}
         >
-          <NotificationsScreen onBack={() => setHomeNotificationsVisible(false)} />
-        </View>
+          <NotificationsScreen onBack={closeHomeNotifications} />
+        </Animated.View>
       )}
 
       {homePaymentSuccess && (

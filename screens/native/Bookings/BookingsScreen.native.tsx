@@ -63,6 +63,7 @@ interface BookingsScreenProps {
   onNavigateBookingDetails?: (bookingId: string) => void;
   onNavigateRatingSpa?: (bookingId: string, fromReview?: boolean) => void;
   onNavigateRatingTherapist?: (bookingId: string, fromReview?: boolean) => void;
+  onNavigateNotifications?: () => void;
 }
 
 export default function BookingsScreen({
@@ -73,6 +74,7 @@ export default function BookingsScreen({
   onNavigateBookingDetails,
   onNavigateRatingSpa,
   onNavigateRatingTherapist,
+  onNavigateNotifications,
 }: BookingsScreenProps = {}) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -516,7 +518,10 @@ export default function BookingsScreen({
     <View className="flex-1 bg-white">
       {/* Header Section */}
       <RisingItem delay={0}>
-        <Header onProfilePress={onNavigateToProfile} />
+        <Header 
+          onProfilePress={onNavigateToProfile}
+          onNotificationPress={onNavigateNotifications}
+        />
       </RisingItem>
 
       {/* Tab Navigation */}
