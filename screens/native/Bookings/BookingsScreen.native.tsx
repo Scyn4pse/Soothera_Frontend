@@ -29,6 +29,12 @@ import { getSalonDetails, topRatedSalons } from '../Home/configs/mockData';
 import type { SalonDetails } from '../Home/types/SalonDetails';
 import type { Service } from '../Home/types/Home';
 import type { Therapist } from '../Home/types/SalonDetails';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 
 interface AddOn {
   id: string;
@@ -75,11 +81,17 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
   const [showPaymentSuccessfulScreen, setShowPaymentSuccessfulScreen] = useState(false);
   const [showPaymentFailedScreen, setShowPaymentFailedScreen] = useState(false);
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
+
+  const screenWidth = Dimensions.get('window').width;
+
+  // Shared values for horizontal slide transitions
+  const bookingDetailsTranslateX = useSharedValue(screenWidth);
+  const ratingSpaTranslateX = useSharedValue(screenWidth);
+  const ratingTherapistTranslateX = useSharedValue(screenWidth);
   
   // Tab order for paging (All is first)
   const tabs: Array<'all' | 'upcoming' | 'completed' | 'cancelled'> = ['all', 'upcoming', 'completed', 'cancelled'];
   const pageScrollViewRef = useRef<ScrollView>(null);
-  const screenWidth = Dimensions.get('window').width;
   const maxAnimatedItems = 6;
   const baseItemDelay = 140;
   const perItemDelay = 70;
@@ -135,7 +147,13 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Handle back from details screen
   const handleBack = () => {
-    setSelectedBookingId(null);
+    bookingDetailsTranslateX.value = withTiming(
+      screenWidth,
+      { duration: 300 },
+      () => {
+        runOnJS(setSelectedBookingId)(null);
+      }
+    );
   };
 
   // Handle rate spa
@@ -149,9 +167,15 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Handle back from rating screen
   const handleBackFromRating = () => {
-    setShowRatingScreen(false);
-    setRatingBookingId(null);
-    setIsFromReviewButton(false); // Reset flag
+    ratingSpaTranslateX.value = withTiming(
+      screenWidth,
+      { duration: 300 },
+      () => {
+        runOnJS(setShowRatingScreen)(false);
+        runOnJS(setRatingBookingId)(null);
+        runOnJS(setIsFromReviewButton)(false); // Reset flag
+      }
+    );
   };
 
   // Handle submit rating
@@ -172,9 +196,15 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Handle back from therapist rating screen
   const handleBackFromTherapistRating = () => {
-    setShowTherapistRatingScreen(false);
-    setTherapistRatingBookingId(null);
-    setIsFromReviewButton(false); // Reset flag
+    ratingTherapistTranslateX.value = withTiming(
+      screenWidth,
+      { duration: 300 },
+      () => {
+        runOnJS(setShowTherapistRatingScreen)(false);
+        runOnJS(setTherapistRatingBookingId)(null);
+        runOnJS(setIsFromReviewButton)(false); // Reset flag
+      }
+    );
   };
 
   // Handle review button press from BookingCard
@@ -340,6 +370,44 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
     );
   }, [selectedBookingId, showRatingScreen, showTherapistRatingScreen, showBookAppointmentScreen, showPaymentSuccessfulScreen, showPaymentFailedScreen, onDetailsScreenChange]);
 
+  // Animate overlays when state changes (enter)
+  useEffect(() => {
+    if (selectedBookingId) {
+      bookingDetailsTranslateX.value = withTiming(0, { duration: 300 });
+    } else {
+      bookingDetailsTranslateX.value = screenWidth;
+    }
+  }, [selectedBookingId, bookingDetailsTranslateX, screenWidth]);
+
+  useEffect(() => {
+    if (showRatingScreen) {
+      ratingSpaTranslateX.value = withTiming(0, { duration: 300 });
+    } else {
+      ratingSpaTranslateX.value = screenWidth;
+    }
+  }, [showRatingScreen, ratingSpaTranslateX, screenWidth]);
+
+  useEffect(() => {
+    if (showTherapistRatingScreen) {
+      ratingTherapistTranslateX.value = withTiming(0, { duration: 300 });
+    } else {
+      ratingTherapistTranslateX.value = screenWidth;
+    }
+  }, [showTherapistRatingScreen, ratingTherapistTranslateX, screenWidth]);
+
+  // Animated styles
+  const bookingDetailsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: bookingDetailsTranslateX.value }],
+  }));
+
+  const ratingSpaAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: ratingSpaTranslateX.value }],
+  }));
+
+  const ratingTherapistAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: ratingTherapistTranslateX.value }],
+  }));
+
   // Handle ScrollView layout to set initial position immediately
   const handleScrollViewLayout = () => {
     if (pageScrollViewRef.current) {
@@ -404,52 +472,6 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
         onPaymentSuccess={handlePaymentSuccess}
       />
     );
-  }
-
-  // If therapist rating screen is active, show therapist rating screen
-  if (showTherapistRatingScreen && therapistRatingBookingId) {
-    const bookingDetails = getBookingDetails(therapistRatingBookingId);
-    if (bookingDetails) {
-      return (
-        <RatingTherapistScreen
-          bookingDetails={bookingDetails}
-          onBack={handleBackFromTherapistRating}
-          onSubmit={handleSubmitTherapistRating}
-        />
-      );
-    }
-  }
-
-  // If rating screen is active, show rating screen
-  if (showRatingScreen && ratingBookingId) {
-    const bookingDetails = getBookingDetails(ratingBookingId);
-    if (bookingDetails) {
-      return (
-        <RatingSpaScreen
-          bookingDetails={bookingDetails}
-          onBack={handleBackFromRating}
-          onSubmit={handleSubmitRating}
-        />
-      );
-    }
-  }
-
-  // If a booking is selected, show details screen
-  if (selectedBookingId) {
-    const bookingDetails = getBookingDetails(selectedBookingId);
-    if (bookingDetails) {
-      return (
-        <BookingDetailsScreen
-          bookingDetails={bookingDetails}
-          onBack={handleBack}
-          onRateSpa={handleRateSpa}
-          onRateTherapist={handleRateTherapist}
-          onRebook={handleRebook}
-          onReschedule={handleReschedule}
-          onCancel={handleCancel}
-        />
-      );
-    }
   }
 
   return (
@@ -548,6 +570,98 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
         onChooseTherapist={handleChooseTherapist}
         onCancel={handleCancelReviewModal}
       />
+
+      {/* Overlay stack for details and rating screens with horizontal transitions */}
+      {/* Booking Details Screen */}
+      {selectedBookingId && (
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 5,
+            },
+            bookingDetailsAnimatedStyle,
+          ]}
+        >
+          {(() => {
+            const bookingDetails = getBookingDetails(selectedBookingId);
+            if (!bookingDetails) return null;
+            return (
+              <BookingDetailsScreen
+                bookingDetails={bookingDetails}
+                onBack={handleBack}
+                onRateSpa={handleRateSpa}
+                onRateTherapist={handleRateTherapist}
+                onRebook={handleRebook}
+                onReschedule={handleReschedule}
+                onCancel={handleCancel}
+              />
+            );
+          })()}
+        </Animated.View>
+      )}
+
+      {/* Rating Spa Screen */}
+      {showRatingScreen && ratingBookingId && (
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 6,
+            },
+            ratingSpaAnimatedStyle,
+          ]}
+        >
+          {(() => {
+            const bookingDetails = getBookingDetails(ratingBookingId);
+            if (!bookingDetails) return null;
+            return (
+              <RatingSpaScreen
+                bookingDetails={bookingDetails}
+                onBack={handleBackFromRating}
+                onSubmit={handleSubmitRating}
+              />
+            );
+          })()}
+        </Animated.View>
+      )}
+
+      {/* Rating Therapist Screen */}
+      {showTherapistRatingScreen && therapistRatingBookingId && (
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 7,
+            },
+            ratingTherapistAnimatedStyle,
+          ]}
+        >
+          {(() => {
+            const bookingDetails = getBookingDetails(therapistRatingBookingId);
+            if (!bookingDetails) return null;
+            return (
+              <RatingTherapistScreen
+                bookingDetails={bookingDetails}
+                onBack={handleBackFromTherapistRating}
+                onSubmit={handleSubmitTherapistRating}
+              />
+            );
+          })()}
+        </Animated.View>
+      )}
     </View>
   );
 }

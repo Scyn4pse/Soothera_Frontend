@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, Image, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,12 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Header } from '@/components/native/Header';
 import { RisingItem } from '@/components/native/RisingItem';
 import ChatRoomScreen from './ChatRoomScreen.native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 
 interface Conversation {
   id: string;
@@ -36,6 +42,9 @@ interface InboxScreenProps {
   onNavigateToProfile?: () => void;
 }
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const TRANSITION_DURATION = 300;
+
 export default function InboxScreen({ onChatRoomChange, onNavigateToProfile }: InboxScreenProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -45,6 +54,9 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile }: I
   const maxAnimatedItems = 8;
   const baseItemDelay = 120;
   const perItemDelay = 55;
+
+  // Shared value for horizontal slide transition
+  const chatTranslateX = useSharedValue(SCREEN_WIDTH);
 
   // Filter conversations based on search query
   const filteredConversations = mockConversations.filter(conv =>
@@ -59,29 +71,34 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile }: I
 
   // Handle back from chat room
   const handleBackFromChatRoom = () => {
-    setSelectedConversationId(null);
+    chatTranslateX.value = withTiming(
+      SCREEN_WIDTH,
+      { duration: TRANSITION_DURATION },
+      () => {
+        runOnJS(setSelectedConversationId)(null);
+      }
+    );
   };
 
   // Notify parent when chat room is shown/hidden
   React.useEffect(() => {
     onChatRoomChange?.(selectedConversationId !== null);
   }, [selectedConversationId, onChatRoomChange]);
-
-  // If a conversation is selected, show chat room
-  if (selectedConversationId) {
-    const conversation = mockConversations.find(c => c.id === selectedConversationId);
-    if (conversation) {
-      return (
-        <ChatRoomScreen
-          conversation={conversation}
-          onBack={handleBackFromChatRoom}
-        />
-      );
+  // Animate chat room when it becomes active
+  React.useEffect(() => {
+    if (selectedConversationId) {
+      chatTranslateX.value = withTiming(0, { duration: TRANSITION_DURATION });
+    } else {
+      chatTranslateX.value = SCREEN_WIDTH;
     }
-  }
+  }, [selectedConversationId, chatTranslateX]);
+
+  const chatAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: chatTranslateX.value }],
+  }));
 
   return (
-    <View className="flex-1 bg-white dark:bg-[#151718]">
+  <View className="flex-1 bg-white dark:bg-[#151718]">
       {/* Header Section */}
       <RisingItem delay={0}>
         <Header onProfilePress={onNavigateToProfile} />
@@ -180,6 +197,34 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile }: I
           );
         })}
       </ScrollView>
+
+      {/* Chat Room overlay with horizontal "next page" transition */}
+      {selectedConversationId && (
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 5,
+            },
+            chatAnimatedStyle,
+          ]}
+        >
+          {(() => {
+            const conversation = mockConversations.find(c => c.id === selectedConversationId);
+            if (!conversation) return null;
+            return (
+              <ChatRoomScreen
+                conversation={conversation}
+                onBack={handleBackFromChatRoom}
+              />
+            );
+          })()}
+        </Animated.View>
+      )}
     </View>
   );
 }
