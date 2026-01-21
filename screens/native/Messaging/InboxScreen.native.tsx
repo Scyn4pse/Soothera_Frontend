@@ -59,7 +59,7 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile, use
   const [activeTab, setActiveTab] = useState<'all' | 'salon' | 'therapist' | 'chatbot'>('all');
   const maxAnimatedItems = 8;
   const baseItemDelay = 120;
-  const perItemDelay = 55;
+  const perItemDelay = 110;
 
   // Shared value for horizontal slide transition
   const chatTranslateX = useSharedValue(SCREEN_WIDTH);

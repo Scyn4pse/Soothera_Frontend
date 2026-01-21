@@ -47,7 +47,8 @@ interface BookingData {
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const TRANSITION_DURATION = 300;
+const TRANSITION_DURATION = 500; // Entry duration (longer)
+const EXIT_TRANSITION_DURATION = 300; // Exit duration (unchanged)
 
 export default function NativeNavigator() {
   const [activeTab, setActiveTab] = useState<TabId>('home');
@@ -56,6 +57,7 @@ export default function NativeNavigator() {
   const [homeServicesVisible, setHomeServicesVisible] = useState(false);
   const [homeTopRatedVisible, setHomeTopRatedVisible] = useState(false);
   const [homeTopRatedAutoFilter, setHomeTopRatedAutoFilter] = useState(false);
+  const [homeTopRatedAutoFocus, setHomeTopRatedAutoFocus] = useState(false);
   const [homeSelectedSalonId, setHomeSelectedSalonId] = useState<string | null>(null);
   const [homeBookVisible, setHomeBookVisible] = useState(false);
   const [homePaymentSuccess, setHomePaymentSuccess] = useState<BookingData | null>(null);
@@ -112,23 +114,53 @@ export default function NativeNavigator() {
 
   // Home animations
   useEffect(() => {
-    homeServicesTx.value = withTiming(homeServicesVisible ? 0 : SCREEN_WIDTH, { duration: TRANSITION_DURATION });
+    if (homeServicesVisible) {
+      // Entry: slide in from right (longer duration)
+      homeServicesTx.value = withTiming(0, { duration: TRANSITION_DURATION });
+    } else {
+      // Exit: slide out to right (shorter duration)
+      homeServicesTx.value = SCREEN_WIDTH;
+    }
   }, [homeServicesVisible, homeServicesTx]);
 
   useEffect(() => {
-    homeTopRatedTx.value = withTiming(homeTopRatedVisible ? 0 : SCREEN_WIDTH, { duration: TRANSITION_DURATION });
+    if (homeTopRatedVisible) {
+      // Entry: slide in from right (longer duration)
+      homeTopRatedTx.value = withTiming(0, { duration: TRANSITION_DURATION });
+    } else {
+      // Exit: slide out to right (shorter duration)
+      homeTopRatedTx.value = SCREEN_WIDTH;
+    }
   }, [homeTopRatedVisible, homeTopRatedTx]);
 
   useEffect(() => {
-    homeSalonTx.value = withTiming(homeSelectedSalonId ? 0 : SCREEN_WIDTH, { duration: TRANSITION_DURATION });
+    if (homeSelectedSalonId) {
+      // Entry: slide in from right (longer duration)
+      homeSalonTx.value = withTiming(0, { duration: TRANSITION_DURATION });
+    } else {
+      // Exit: slide out to right (shorter duration)
+      homeSalonTx.value = SCREEN_WIDTH;
+    }
   }, [homeSelectedSalonId, homeSalonTx]);
 
   useEffect(() => {
-    homeBookTx.value = withTiming(homeBookVisible ? 0 : SCREEN_WIDTH, { duration: TRANSITION_DURATION });
+    if (homeBookVisible) {
+      // Entry: slide in from right (longer duration)
+      homeBookTx.value = withTiming(0, { duration: TRANSITION_DURATION });
+    } else {
+      // Exit: slide out to right (shorter duration)
+      homeBookTx.value = SCREEN_WIDTH;
+    }
   }, [homeBookVisible, homeBookTx]);
 
   useEffect(() => {
-    homeNotificationsTx.value = withTiming(homeNotificationsVisible ? 0 : SCREEN_WIDTH, { duration: TRANSITION_DURATION });
+    if (homeNotificationsVisible) {
+      // Entry: slide in from right (longer duration)
+      homeNotificationsTx.value = withTiming(0, { duration: TRANSITION_DURATION });
+    } else {
+      // Exit: slide out to right (shorter duration)
+      homeNotificationsTx.value = SCREEN_WIDTH;
+    }
   }, [homeNotificationsVisible, homeNotificationsTx]);
 
   const homeServicesStyle = useAnimatedStyle(() => ({
@@ -173,7 +205,13 @@ export default function NativeNavigator() {
 
   // Chat animation
   useEffect(() => {
-    chatTx.value = withTiming(chatConversation ? 0 : SCREEN_WIDTH, { duration: TRANSITION_DURATION });
+    if (chatConversation) {
+      // Entry: slide in from right (longer duration)
+      chatTx.value = withTiming(0, { duration: TRANSITION_DURATION });
+    } else {
+      // Exit: slide out to right (shorter duration)
+      chatTx.value = SCREEN_WIDTH;
+    }
   }, [chatConversation, chatTx]);
   const chatStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: chatTx.value }],
@@ -193,28 +231,28 @@ export default function NativeNavigator() {
   const openHomeNotifications = () => setHomeNotificationsVisible(true);
 
   const closeHomeNotifications = () => {
-    homeNotificationsTx.value = withTiming(SCREEN_WIDTH, { duration: TRANSITION_DURATION }, () =>
+    homeNotificationsTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
       runOnJS(setHomeNotificationsVisible)(false)
     );
   };
 
   const closeHomeServices = () => {
-    homeServicesTx.value = withTiming(SCREEN_WIDTH, { duration: TRANSITION_DURATION }, () =>
+    homeServicesTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
       runOnJS(setHomeServicesVisible)(false)
     );
   };
   const closeHomeTopRated = () => {
-    homeTopRatedTx.value = withTiming(SCREEN_WIDTH, { duration: TRANSITION_DURATION }, () =>
+    homeTopRatedTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
       runOnJS(setHomeTopRatedVisible)(false)
     );
   };
   const closeHomeSalon = () => {
-    homeSalonTx.value = withTiming(SCREEN_WIDTH, { duration: TRANSITION_DURATION }, () =>
+    homeSalonTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
       runOnJS(setHomeSelectedSalonId)(null)
     );
   };
   const closeHomeBook = () => {
-    homeBookTx.value = withTiming(SCREEN_WIDTH, { duration: TRANSITION_DURATION }, () =>
+    homeBookTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
       runOnJS(setHomeBookVisible)(false)
     );
   };
@@ -278,7 +316,7 @@ export default function NativeNavigator() {
   // Messaging handlers
   const openChat = (conversation: Conversation) => setChatConversation(conversation);
   const closeChat = () => {
-    chatTx.value = withTiming(SCREEN_WIDTH, { duration: TRANSITION_DURATION }, () =>
+    chatTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
       runOnJS(setChatConversation)(null)
     );
   };
@@ -442,6 +480,7 @@ export default function NativeNavigator() {
             onServicePress={() => {
               setHomeTopRatedVisible(true);
               setHomeTopRatedAutoFilter(false);
+              setHomeTopRatedAutoFocus(false);
             }}
           />
         </Animated.View>
@@ -465,6 +504,7 @@ export default function NativeNavigator() {
             onBack={closeHomeTopRated}
             onSalonPress={openHomeSalon}
             autoOpenFilter={homeTopRatedAutoFilter}
+            autoFocusSearch={homeTopRatedAutoFocus}
           />
         </Animated.View>
       )}

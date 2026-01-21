@@ -5,9 +5,11 @@ interface RisingItemProps extends ViewProps {
   children: React.ReactNode;
   visible?: boolean;
   duration?: number;
+  exitDuration?: number;
   delay?: number;
   offset?: number;
   style?: StyleProp<ViewStyle>;
+  fadeIn?: boolean;
 }
 
 /**
@@ -17,24 +19,28 @@ interface RisingItemProps extends ViewProps {
 export function RisingItem({
   children,
   visible,
-  duration = 280,
+  duration = 450,
+  exitDuration = 280,
   delay = 0,
   offset = 18,
   style,
+  fadeIn = true,
   ...rest
 }: RisingItemProps) {
   const isVisible = visible ?? true;
   const translateY = useRef(new Animated.Value(offset)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(fadeIn ? 0 : 1)).current;
   const [rendered, setRendered] = useState(isVisible);
 
   useEffect(() => {
     if (isVisible) {
       setRendered(true);
       translateY.setValue(offset);
-      opacity.setValue(0);
+      if (fadeIn) {
+        opacity.setValue(0);
+      }
 
-      Animated.parallel([
+      const animations = [
         Animated.timing(translateY, {
           toValue: 0,
           duration,
@@ -42,35 +48,49 @@ export function RisingItem({
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration,
-          delay,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]).start();
+      ];
+
+      if (fadeIn) {
+        animations.push(
+          Animated.timing(opacity, {
+            toValue: 1,
+            duration,
+            delay,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          })
+        );
+      }
+
+      Animated.parallel(animations).start();
     } else {
-      Animated.parallel([
+      const animations = [
         Animated.timing(translateY, {
           toValue: offset,
-          duration,
+          duration: exitDuration,
           easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration,
-          easing: Easing.in(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]).start(({ finished }) => {
+      ];
+
+      if (fadeIn) {
+        animations.push(
+          Animated.timing(opacity, {
+            toValue: 0,
+            duration: exitDuration,
+            easing: Easing.in(Easing.quad),
+            useNativeDriver: true,
+          })
+        );
+      }
+
+      Animated.parallel(animations).start(({ finished }) => {
         if (finished) {
           setRendered(false);
         }
       });
     }
-  }, [delay, duration, isVisible, offset, opacity, translateY]);
+  }, [delay, duration, exitDuration, isVisible, offset, opacity, translateY, fadeIn]);
 
   if (!rendered) {
     return null;

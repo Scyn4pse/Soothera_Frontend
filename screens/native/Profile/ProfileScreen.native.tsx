@@ -44,7 +44,7 @@ export default function ProfileScreen({ isActive }: ProfileScreenProps = {}) {
   const [imageError, setImageError] = useState(false);
   const maxAnimatedFavorites = 6;
   const maxAnimatedRecommended = 6;
-  const perItemDelay = 60;
+  const perItemDelay = 120;
   
   // User data
   const userName = 'User Profile';

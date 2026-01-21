@@ -8,15 +8,16 @@ interface TopRatedSalonsScreenProps {
   onBack?: () => void;
   onSalonPress?: (salonId: string) => void;
   autoOpenFilter?: boolean;
+  autoFocusSearch?: boolean;
 }
 
-export default function TopRatedSalonsScreen({ onBack, onSalonPress, autoOpenFilter = false }: TopRatedSalonsScreenProps = {}) {
+export default function TopRatedSalonsScreen({ onBack, onSalonPress, autoOpenFilter = false, autoFocusSearch = false }: TopRatedSalonsScreenProps = {}) {
   return (
     <View className="flex-1 bg-white">
       {/* Search Bar with Back Button */}
       <SearchBarWithBack 
         onBack={onBack} 
-        autoFocus={true}
+        autoFocus={autoFocusSearch}
         autoOpenFilter={autoOpenFilter}
       />
 

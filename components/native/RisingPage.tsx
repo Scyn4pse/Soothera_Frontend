@@ -5,6 +5,7 @@ interface RisingPageProps {
   visible: boolean;
   children: React.ReactNode;
   duration?: number;
+  exitDuration?: number;
   offset?: number;
   style?: StyleProp<ViewStyle>;
   fillContainer?: boolean;
@@ -21,6 +22,7 @@ export function RisingPage({
   visible,
   children,
   duration = 260,
+  exitDuration = 260,
   offset = 28,
   style,
   fillContainer = true,
@@ -62,7 +64,7 @@ export function RisingPage({
       const animations = [
         Animated.timing(translateY, {
           toValue: offset,
-          duration,
+          duration: exitDuration,
           easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
@@ -71,7 +73,7 @@ export function RisingPage({
         animations.push(
           Animated.timing(opacity, {
             toValue: 0,
-            duration,
+            duration: exitDuration,
             easing: Easing.in(Easing.quad),
             useNativeDriver: true,
           })
@@ -84,7 +86,7 @@ export function RisingPage({
         }
       });
     }
-  }, [fadeIn, fadeOut, visible, duration, offset, opacity, translateY]);
+  }, [fadeIn, fadeOut, visible, duration, exitDuration, offset, opacity, translateY]);
 
   if (!rendered) return null;
 

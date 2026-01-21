@@ -4,6 +4,7 @@ import { Text } from '@/components/Text';
 import { Service } from '../types/Home';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, primaryColor } from '@/constants/theme';
+import { RisingItem } from '@/components/native/RisingItem';
 
 interface ServiceCardsGridProps {
   services: Service[];
@@ -31,85 +32,92 @@ export function ServiceCardsGrid({ services, contentContainerStyle, onServicePre
     }
   });
 
-  const renderServiceCard = (service: Service) => (
-    <TouchableOpacity
-      key={service.id}
-      className="mb-4"
-      activeOpacity={0.7}
-      onPress={() => onServicePress?.(service)}
-    >
-      <View 
-        className="rounded-xl overflow-hidden bg-white"
-        style={{ 
-          elevation: 3,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-        }}
-      >
-        {/* Service Image */}
-        <View className="relative">
-          <Image
-            source={service.image}
-            className="w-full h-40"
-            resizeMode="cover"
-          />
-        </View>
+  const renderServiceCard = (service: Service, index: number) => {
+    const baseDelay = 120;
+    const perItemDelay = 120;
+    const delay = baseDelay + (index * perItemDelay);
 
-        {/* Service Details */}
-        <View className="p-3">
-          {/* Service Name */}
-          <Text 
-            className="text-base font-semibold mb-1" 
-            style={{ color: colors.text }}
-            numberOfLines={2}
+    return (
+      <RisingItem key={service.id} delay={delay} fadeIn={false} offset={28}>
+        <TouchableOpacity
+          className="mb-4"
+          activeOpacity={0.7}
+          onPress={() => onServicePress?.(service)}
+        >
+          <View 
+            className="rounded-xl overflow-hidden bg-white"
+            style={{ 
+              elevation: 3,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+            }}
           >
-            {service.name}
-          </Text>
+            {/* Service Image */}
+            <View className="relative">
+              <Image
+                source={service.image}
+                className="w-full h-40"
+                resizeMode="cover"
+              />
+            </View>
 
-          {/* Price */}
-          <Text 
-            className="text-lg font-bold mb-1" 
-            style={{ color: primaryColor }}
-          >
-            {formatPrice(service.price)}
-          </Text>
-
-          {/* Description */}
-          <Text 
-            className="text-xs mb-2" 
-            style={{ color: colors.icon }}
-            numberOfLines={2}
-          >
-            {service.description}
-          </Text>
-
-          {/* Duration Tags */}
-          <View className="flex-row flex-wrap" style={{ gap: 4 }}>
-            {service.duration.map((duration, index) => (
-              <View
-                key={index}
-                className="px-2 py-1 rounded-full mb-1"
-                style={{ 
-                  backgroundColor: colors.primary + '20',
-                  flexShrink: 1,
-                }}
+            {/* Service Details */}
+            <View className="p-3">
+              {/* Service Name */}
+              <Text 
+                className="text-base font-semibold mb-1" 
+                style={{ color: colors.text }}
+                numberOfLines={2}
               >
-                <Text 
-                  className="text-xs font-medium" 
-                  style={{ color: colors.primary }}
-                  numberOfLines={1}
-                >
-                  {duration}
-                </Text>
+                {service.name}
+              </Text>
+
+              {/* Price */}
+              <Text 
+                className="text-lg font-bold mb-1" 
+                style={{ color: primaryColor }}
+              >
+                {formatPrice(service.price)}
+              </Text>
+
+              {/* Description */}
+              <Text 
+                className="text-xs mb-2" 
+                style={{ color: colors.icon }}
+                numberOfLines={2}
+              >
+                {service.description}
+              </Text>
+
+              {/* Duration Tags */}
+              <View className="flex-row flex-wrap" style={{ gap: 4 }}>
+                {service.duration.map((duration, index) => (
+                  <View
+                    key={index}
+                    className="px-2 py-1 rounded-full mb-1"
+                    style={{ 
+                      backgroundColor: colors.primary + '20',
+                      flexShrink: 1,
+                    }}
+                  >
+                    <Text 
+                      className="text-xs font-medium" 
+                      style={{ color: colors.primary }}
+                      numberOfLines={1}
+                    >
+                      {duration}
+                    </Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            </View>
           </View>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+        </TouchableOpacity>
+      </RisingItem>
+    );
+  };
 
   return (
     <ScrollView 
@@ -120,12 +128,12 @@ export function ServiceCardsGrid({ services, contentContainerStyle, onServicePre
       <View className="flex-row" style={{ gap: 12 }}>
         {/* Column 1 */}
         <View className="flex-1">
-          {column1.map((service) => renderServiceCard(service))}
+          {column1.map((service, index) => renderServiceCard(service, index * 2))}
         </View>
 
         {/* Column 2 */}
         <View className="flex-1">
-          {column2.map((service) => renderServiceCard(service))}
+          {column2.map((service, index) => renderServiceCard(service, index * 2 + 1))}
         </View>
       </View>
     </ScrollView>

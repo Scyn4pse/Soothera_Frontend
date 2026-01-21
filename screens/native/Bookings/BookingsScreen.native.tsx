@@ -110,7 +110,7 @@ export default function BookingsScreen({
   const pageScrollViewRef = useRef<ScrollView>(null);
   const maxAnimatedItems = 6;
   const baseItemDelay = 140;
-  const perItemDelay = 70;
+  const perItemDelay = 140;
   
   // Handle page scroll to sync active tab
   const handlePageScroll = (event: any) => {

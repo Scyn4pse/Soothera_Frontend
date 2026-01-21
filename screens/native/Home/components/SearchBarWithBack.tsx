@@ -50,20 +50,20 @@ export function SearchBarWithBack({
 
   useEffect(() => {
     if (autoFocus && inputRef.current) {
-      // Small delay to ensure the screen is fully mounted before focusing
+      // Delay to ensure the screen is fully mounted and animation has started before focusing
       const timer = setTimeout(() => {
         inputRef.current?.focus();
-      }, 100);
+      }, 200);
       return () => clearTimeout(timer);
     }
   }, [autoFocus]);
 
   useEffect(() => {
     if (autoOpenFilter && enableFilters) {
-      // Small delay to ensure the screen is fully mounted before opening modal
+      // Delay to ensure the screen is fully mounted and search bar is focused before opening modal
       const timer = setTimeout(() => {
         setShowFilterModal(true);
-      }, 300);
+      }, 400);
       return () => clearTimeout(timer);
     }
   }, [autoOpenFilter, enableFilters]);

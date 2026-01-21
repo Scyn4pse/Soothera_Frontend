@@ -49,7 +49,7 @@ interface HomeScreenProps {
   // Navigator-managed overlay mode
   useNavigatorOverlays?: boolean;
   onNavigateServices?: () => void;
-  onNavigateTopRated?: (options?: { autoOpenFilter?: boolean }) => void;
+  onNavigateTopRated?: (options?: { autoOpenFilter?: boolean; autoFocusSearch?: boolean }) => void;
   onNavigateSalonDetails?: (salonId: string) => void;
   onNavigateBookAppointment?: (salonId: string) => void;
   onNavigateNotifications?: () => void;
@@ -301,18 +301,18 @@ export default function HomeScreen({
         </RisingItem>
 
         {/* Search Bar and Filter */}
-        <RisingItem delay={80}>
+        <RisingItem delay={160}>
           <SearchBar 
             onPress={() => {
               if (useNavigatorOverlays) {
-                onNavigateTopRated?.({ autoOpenFilter: false });
+                onNavigateTopRated?.({ autoOpenFilter: false, autoFocusSearch: true });
               } else {
                 setShowTopRatedSalonsScreen(true);
               }
             }} 
             onFilterPress={() => {
               if (useNavigatorOverlays) {
-                onNavigateTopRated?.({ autoOpenFilter: true });
+                onNavigateTopRated?.({ autoOpenFilter: true, autoFocusSearch: true });
               } else {
                 setAutoOpenFilterModal(true);
                 setShowTopRatedSalonsScreen(true);
@@ -322,12 +322,12 @@ export default function HomeScreen({
         </RisingItem>
 
         {/* Special Deals Section */}
-        <RisingItem delay={140}>
+        <RisingItem delay={280}>
           <SpecialDeals />
         </RisingItem>
 
         {/* Services Section */}
-        <RisingItem delay={200}>
+        <RisingItem delay={400}>
           <Services
             onSeeAll={() => {
               if (useNavigatorOverlays) {
@@ -348,7 +348,7 @@ export default function HomeScreen({
         </RisingItem>
 
         {/* Top Rated Salons Section */}
-        <RisingItem delay={260}>
+        <RisingItem delay={520}>
           <TopRatedSalons 
             onSeeAll={() => {
               if (useNavigatorOverlays) {
