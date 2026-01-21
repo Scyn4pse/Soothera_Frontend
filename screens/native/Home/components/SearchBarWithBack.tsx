@@ -76,7 +76,8 @@ export function SearchBarWithBack({
 
   return (
     <>
-      <View className="flex-row items-center px-5 py-2 mb-4">
+      <View className="flex-row items-center px-5 py-2 mb-4" 
+      style={{paddingTop: 40}}>
         {/* Back Button */}
         <TouchableOpacity 
           onPress={onBack}

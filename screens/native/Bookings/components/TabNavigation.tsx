@@ -49,7 +49,7 @@ export default function TabNavigation({ activeTab, onTabPress }: TabNavigationPr
   }, [activeTab]);
 
   return (
-    <View className="mx-5 mt-2 mb-4 bg-gray-100 rounded-xl p-1">
+    <View className="mx-5 mt-2 mb-4 bg-gray-100 rounded-full p-1">
       <ScrollView 
         ref={scrollViewRef}
         horizontal 
@@ -59,7 +59,7 @@ export default function TabNavigation({ activeTab, onTabPress }: TabNavigationPr
         {tabs.map((tab, index) => (
           <TouchableOpacity
             key={tab}
-            className={`px-4 py-3 rounded-lg ${index < tabs.length - 1 ? 'mr-2' : ''}`}
+            className={`px-4 py-3 rounded-full ${index < tabs.length - 1 ? 'mr-2' : ''}`}
             style={{ backgroundColor: activeTab === tab ? colors.primary : 'transparent' }}
             onPress={() => onTabPress(tab)}
           >

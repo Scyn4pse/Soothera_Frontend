@@ -15,7 +15,7 @@ export function TransparentHeader({ onBack, title }: TransparentHeaderProps) {
       style={{ 
         backgroundColor: 'transparent',
         top: 0,
-        paddingTop: 20,
+        paddingTop: 35,
       }}
     >
       <TouchableOpacity 
