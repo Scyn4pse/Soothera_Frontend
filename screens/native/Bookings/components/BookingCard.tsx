@@ -4,6 +4,7 @@ import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { RisingItem } from '@/components/native/RisingItem';
 import { Booking, BOOKING_STATUS, getStatusText } from '../types/Booking';
 
 type TabType = 'upcoming' | 'completed' | 'cancelled' | 'all';
@@ -14,6 +15,9 @@ interface BookingCardProps {
   onPress?: () => void;
   onReview?: (bookingId: string) => void;
   onRebook?: (booking: Booking) => void;
+  animateContent?: boolean;
+  animationDelay?: number;
+  contentVisible?: boolean;
 }
 
 const getStatusColor = (status: number, colors: any) => {
@@ -30,7 +34,7 @@ const getStatusColor = (status: number, colors: any) => {
   }
 };
 
-export default function BookingCard({ booking, tabType, onPress, onReview, onRebook }: BookingCardProps) {
+export default function BookingCard({ booking, tabType, onPress, onReview, onRebook, animateContent = false, animationDelay = 0, contentVisible = true }: BookingCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
@@ -41,19 +45,8 @@ export default function BookingCard({ booking, tabType, onPress, onReview, onReb
   const showCancelledButtons = tabType === 'cancelled' || (tabType === 'all' && booking.status === BOOKING_STATUS.CANCELLED);
   const showStatusTag = tabType === 'upcoming' || (tabType === 'all' && (booking.status === BOOKING_STATUS.CONFIRMED || booking.status === BOOKING_STATUS.PENDING || booking.status === BOOKING_STATUS.COMPLETED || booking.status === BOOKING_STATUS.CANCELLED));
 
-  return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      onPress={onPress}
-      className="bg-white rounded-2xl p-4 mb-4"
-      style={{
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-      }}
-    >
+  const content = (
+    <>
       {/* Top Section: Image and Details */}
       <View className="flex-row">
         {/* Image */}
@@ -190,6 +183,29 @@ export default function BookingCard({ booking, tabType, onPress, onReview, onReb
           </TouchableOpacity>
         )}
       </View>
+    </>
+  );
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={onPress}
+      className="bg-white rounded-2xl p-4 mb-4"
+      style={{
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
+      }}
+    >
+      {animateContent ? (
+        <RisingItem delay={animationDelay} offset={12} visible={contentVisible}>
+          <View>{content}</View>
+        </RisingItem>
+      ) : (
+        content
+      )}
     </TouchableOpacity>
   );
 }

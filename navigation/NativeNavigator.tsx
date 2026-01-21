@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomTabs } from '../components/native/BottomTabs';
+import { RisingPage } from '../components/native/RisingPage';
 import HomeScreen from '../screens/native/Home/HomeScreen.native';
 import BookingsScreen from '../screens/native/Bookings/BookingsScreen.native';
 import InboxScreen from '../screens/native/Messaging/InboxScreen.native';
@@ -24,10 +25,10 @@ function MainContent() {
     setActiveTab(tabId);
   };
 
-  const renderScreen = () => {
-    switch (activeTab) {
-      case 'home':
-        return (
+  return (
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+      <View style={{ flex: 1, position: 'relative' }}>
+        <RisingPage visible={activeTab === 'home'}>
           <HomeScreen 
             onServicesScreenChange={setIsServicesScreenActive}
             onTopRatedSalonsScreenChange={setIsTopRatedSalonsScreenActive}
@@ -36,49 +37,47 @@ function MainContent() {
             onNotificationsScreenChange={setIsNotificationsScreenActive}
             onNavigateToProfile={() => setActiveTab('profile')}
           />
-        );
-      case 'bookings':
-        return (
+        </RisingPage>
+
+        <RisingPage visible={activeTab === 'bookings'} fadeIn={false} fadeOut={false}>
           <BookingsScreen 
             onDetailsScreenChange={setIsDetailsScreenActive}
             onNavigateToProfile={() => setActiveTab('profile')}
+            isActive={activeTab === 'bookings'}
           />
-        );
-      case 'messaging':
-        return (
+        </RisingPage>
+
+        <RisingPage visible={activeTab === 'messaging'}>
           <InboxScreen 
             onChatRoomChange={setIsChatRoomActive}
             onNavigateToProfile={() => setActiveTab('profile')}
           />
-        );
-      case 'profile':
-        return <ProfileScreen />;
-      default:
-        return (
-          <HomeScreen 
-            onServicesScreenChange={setIsServicesScreenActive}
-            onTopRatedSalonsScreenChange={setIsTopRatedSalonsScreenActive}
-            onSalonDetailsScreenChange={setIsSalonDetailsScreenActive}
-            onBookAppointmentScreenChange={setIsBookAppointmentScreenActive}
-            onNotificationsScreenChange={setIsNotificationsScreenActive}
-          />
-        );
-    }
-  };
+        </RisingPage>
 
-  return (
-    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <View style={{ flex: 1 }}>
-        {renderScreen()}
+        <RisingPage visible={activeTab === 'profile'} fadeIn={false} fadeOut={false}>
+          <ProfileScreen isActive={activeTab === 'profile'} />
+        </RisingPage>
       </View>
 
       {/* Bottom Tab Navigation - Hide when details screen, services screen, top rated salons screen, salon details screen, book appointment screen, notifications screen, or chat room is active */}
-      {!isDetailsScreenActive && !isServicesScreenActive && !isTopRatedSalonsScreenActive && !isSalonDetailsScreenActive && !isBookAppointmentScreenActive && !isNotificationsScreenActive && !isChatRoomActive && (
-      <BottomTabs
-        activeTab={activeTab}
-        onTabPress={handleTabPress}
-      />
-      )}
+      <RisingPage
+        visible={
+          !isDetailsScreenActive &&
+          !isServicesScreenActive &&
+          !isTopRatedSalonsScreenActive &&
+          !isSalonDetailsScreenActive &&
+          !isBookAppointmentScreenActive &&
+          !isNotificationsScreenActive &&
+          !isChatRoomActive
+        }
+        fillContainer={false}
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}
+      >
+        <BottomTabs
+          activeTab={activeTab}
+          onTabPress={handleTabPress}
+        />
+      </RisingPage>
     </SafeAreaView>
   );
 }

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '@/components/native/Header';
+import { RisingItem } from '@/components/native/RisingItem';
 import { SearchBar } from './components/Home/SearchBar';
 import { SpecialDeals } from './components/Home/SpecialDeals';
 import { Services } from './components/Home/Services';
@@ -39,6 +41,7 @@ interface HomeScreenProps {
 }
 
 export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScreenChange, onSalonDetailsScreenChange, onBookAppointmentScreenChange, onNotificationsScreenChange, onNavigateToProfile }: HomeScreenProps = {}) {
+  const insets = useSafeAreaInsets();
   const [showServicesScreen, setShowServicesScreen] = useState(false);
   const [showTopRatedSalonsScreen, setShowTopRatedSalonsScreen] = useState(false);
   const [autoOpenFilterModal, setAutoOpenFilterModal] = useState(false);
@@ -224,39 +227,53 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
 
   return (
     <View className="flex-1 bg-white">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 70 }}
+      >
         {/* Header Section */}
-        <Header 
-          onProfilePress={onNavigateToProfile}
-          onNotificationPress={() => setShowNotificationsScreen(true)}
-        />
+        <RisingItem delay={0}>
+          <Header 
+            onProfilePress={onNavigateToProfile}
+            onNotificationPress={() => setShowNotificationsScreen(true)}
+          />
+        </RisingItem>
 
         {/* Search Bar and Filter */}
-        <SearchBar 
-          onPress={() => setShowTopRatedSalonsScreen(true)} 
-          onFilterPress={() => {
-            setAutoOpenFilterModal(true);
-            setShowTopRatedSalonsScreen(true);
-          }}
-        />
+        <RisingItem delay={80}>
+          <SearchBar 
+            onPress={() => setShowTopRatedSalonsScreen(true)} 
+            onFilterPress={() => {
+              setAutoOpenFilterModal(true);
+              setShowTopRatedSalonsScreen(true);
+            }}
+          />
+        </RisingItem>
 
         {/* Special Deals Section */}
-        <SpecialDeals />
+        <RisingItem delay={140}>
+          <SpecialDeals />
+        </RisingItem>
 
         {/* Services Section */}
-        <Services
-          onSeeAll={() => setShowServicesScreen(true)}
-          onServicePress={() => {
-            setAutoOpenFilterModal(false);
-            setShowTopRatedSalonsScreen(true);
-          }}
-        />
+        <RisingItem delay={200}>
+          <Services
+            onSeeAll={() => setShowServicesScreen(true)}
+            onServicePress={() => {
+              setAutoOpenFilterModal(false);
+              setShowTopRatedSalonsScreen(true);
+            }}
+          />
+        </RisingItem>
 
         {/* Top Rated Salons Section */}
-        <TopRatedSalons 
-          onSeeAll={() => setShowTopRatedSalonsScreen(true)}
-          onSalonPress={handleSalonPress}
-        />
+        <RisingItem delay={260}>
+          <TopRatedSalons 
+            onSeeAll={() => setShowTopRatedSalonsScreen(true)}
+            onSalonPress={handleSalonPress}
+          />
+        </RisingItem>
       </ScrollView>
     </View>
   );

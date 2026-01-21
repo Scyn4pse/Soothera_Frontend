@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Header } from '@/components/native/Header';
+import { RisingItem } from '@/components/native/RisingItem';
 import ChatRoomScreen from './ChatRoomScreen.native';
 
 interface Conversation {
@@ -37,8 +39,12 @@ interface InboxScreenProps {
 export default function InboxScreen({ onChatRoomChange, onNavigateToProfile }: InboxScreenProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const maxAnimatedItems = 8;
+  const baseItemDelay = 120;
+  const perItemDelay = 55;
 
   // Filter conversations based on search query
   const filteredConversations = mockConversations.filter(conv =>
@@ -77,90 +83,102 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile }: I
   return (
     <View className="flex-1 bg-white dark:bg-[#151718]">
       {/* Header Section */}
-      <Header onProfilePress={onNavigateToProfile} />
+      <RisingItem delay={0}>
+        <Header onProfilePress={onNavigateToProfile} />
+      </RisingItem>
 
       {/* Search Bar */}
-      <View className="px-5 py-2 mb-4">
-        <View className="flex-row items-center bg-gray-100 rounded-full px-4 py-1">
-          <Ionicons name="search-outline" size={20} color={colors.icon} />
-          <TextInput
-            placeholder="Search"
-            placeholderTextColor={colors.icon}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            className="flex-1 ml-2 text-base"
-            style={{ color: colors.text }}
-          />
+      <RisingItem delay={60}>
+        <View className="px-5 py-2 mb-4">
+          <View className="flex-row items-center bg-gray-100 rounded-full px-4 py-1">
+            <Ionicons name="search-outline" size={20} color={colors.icon} />
+            <TextInput
+              placeholder="Search"
+              placeholderTextColor={colors.icon}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              className="flex-1 ml-2 text-base"
+              style={{ color: colors.text }}
+            />
+          </View>
         </View>
-      </View>
+      </RisingItem>
 
       {/* Conversations List */}
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {filteredConversations.map((conversation) => (
-          <TouchableOpacity
-            key={conversation.id}
-            onPress={() => handleConversationPress(conversation.id)}
-            className="flex-row items-center px-5 py-4 border-b border-gray-100 dark:border-[#2a2a2a]"
-            activeOpacity={0.7}
-          >
-            {/* Avatar */}
-            <View className="w-12 h-12 rounded-full bg-gray-200 dark:bg-[#2a2a2a] items-center justify-center mr-3">
-              {conversation.avatar ? (
-                <Image
-                  source={{ uri: conversation.avatar }}
-                  className="w-12 h-12 rounded-full"
-                />
-              ) : (
-                <Text
-                  className="text-lg font-semibold"
-                  style={{ color: colors.primary }}
-                >
-                  {conversation.name.charAt(0).toUpperCase()}
-                </Text>
-              )}
-            </View>
-
-            {/* Conversation Info */}
-            <View className="flex-1">
-              <View className="flex-row items-center justify-between mb-1">
-                <Text
-                  className="text-base font-semibold"
-                  style={{ color: colors.text }}
-                >
-                  {conversation.name}
-                </Text>
-                <Text
-                  className="text-xs"
-                  style={{ color: colors.icon }}
-                >
-                  {conversation.timestamp}
-                </Text>
-              </View>
-              <View className="flex-row items-center justify-between">
-                <Text
-                  className="text-sm flex-1 mr-2"
-                  numberOfLines={1}
-                  style={{ color: colors.icon }}
-                >
-                  {conversation.lastMessage}
-                </Text>
-                {conversation.unreadCount && conversation.unreadCount > 0 && (
-                  <View
-                    className="min-w-[20px] h-5 rounded-full items-center justify-center px-1.5"
-                    style={{ backgroundColor: colors.primary }}
-                  >
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 70 }}
+      >
+        {filteredConversations.map((conversation, index) => {
+          const delay = baseItemDelay + Math.min(index, maxAnimatedItems) * perItemDelay;
+          return (
+            <RisingItem key={conversation.id} delay={delay}>
+              <TouchableOpacity
+                onPress={() => handleConversationPress(conversation.id)}
+                className="flex-row items-center px-5 py-4 border-b border-gray-100 dark:border-[#2a2a2a]"
+                activeOpacity={0.7}
+              >
+                {/* Avatar */}
+                <View className="w-12 h-12 rounded-full bg-gray-200 dark:bg-[#2a2a2a] items-center justify-center mr-3">
+                  {conversation.avatar ? (
+                    <Image
+                      source={{ uri: conversation.avatar }}
+                      className="w-12 h-12 rounded-full"
+                    />
+                  ) : (
                     <Text
-                      className="text-xs font-semibold"
-                      style={{ color: '#fff' }}
+                      className="text-lg font-semibold"
+                      style={{ color: colors.primary }}
                     >
-                      {conversation.unreadCount}
+                      {conversation.name.charAt(0).toUpperCase()}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Conversation Info */}
+                <View className="flex-1">
+                  <View className="flex-row items-center justify-between mb-1">
+                    <Text
+                      className="text-base font-semibold"
+                      style={{ color: colors.text }}
+                    >
+                      {conversation.name}
+                    </Text>
+                    <Text
+                      className="text-xs"
+                      style={{ color: colors.icon }}
+                    >
+                      {conversation.timestamp}
                     </Text>
                   </View>
-                )}
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
+                  <View className="flex-row items-center justify-between">
+                    <Text
+                      className="text-sm flex-1 mr-2"
+                      numberOfLines={1}
+                      style={{ color: colors.icon }}
+                    >
+                      {conversation.lastMessage}
+                    </Text>
+                    {conversation.unreadCount && conversation.unreadCount > 0 && (
+                      <View
+                        className="min-w-[20px] h-5 rounded-full items-center justify-center px-1.5"
+                        style={{ backgroundColor: colors.primary }}
+                      >
+                        <Text
+                          className="text-xs font-semibold"
+                          style={{ color: '#fff' }}
+                        >
+                          {conversation.unreadCount}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </RisingItem>
+          );
+        })}
       </ScrollView>
     </View>
   );

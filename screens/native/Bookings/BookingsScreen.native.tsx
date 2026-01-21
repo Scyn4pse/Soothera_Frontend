@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { View, ScrollView, Dimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Header } from '@/components/native/Header';
 import { useConfirmation } from '@/components/native/ConfirmationModalContext';
+import { RisingItem } from '@/components/native/RisingItem';
 import { 
   Booking,
   allBookings,
@@ -50,11 +52,14 @@ interface BookingData {
 interface BookingsScreenProps {
   onDetailsScreenChange?: (isActive: boolean) => void;
   onNavigateToProfile?: () => void;
+  isActive?: boolean;
 }
 
-export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProfile }: BookingsScreenProps = {}) {
+export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProfile, isActive }: BookingsScreenProps = {}) {
+  const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const isVisible = isActive ?? true;
   const { showConfirmation } = useConfirmation();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'completed' | 'cancelled' | 'all'>('all');
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
@@ -75,6 +80,9 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
   const tabs: Array<'all' | 'upcoming' | 'completed' | 'cancelled'> = ['all', 'upcoming', 'completed', 'cancelled'];
   const pageScrollViewRef = useRef<ScrollView>(null);
   const screenWidth = Dimensions.get('window').width;
+  const maxAnimatedItems = 6;
+  const baseItemDelay = 140;
+  const perItemDelay = 70;
   
   // Handle page scroll to sync active tab
   const handlePageScroll = (event: any) => {
@@ -447,10 +455,14 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
   return (
     <View className="flex-1 bg-white">
       {/* Header Section */}
-      <Header onProfilePress={onNavigateToProfile} />
+      <RisingItem delay={0}>
+        <Header onProfilePress={onNavigateToProfile} />
+      </RisingItem>
 
       {/* Tab Navigation */}
-      <TabNavigation activeTab={activeTab} onTabPress={handleTabPress} />
+      <RisingItem delay={80}>
+        <TabNavigation activeTab={activeTab} onTabPress={handleTabPress} />
+      </RisingItem>
 
       {/* Bookings List - Horizontal Pager */}
       <ScrollView
@@ -479,28 +491,50 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
               className="flex-1 px-5"
               style={{ width: screenWidth }}
               showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: insets.bottom + 70, paddingTop: 12 }}
             >
               {tabBookings.length > 0 ? (
-                tabBookings.map((booking) => (
-                  <BookingCard 
-                    key={booking.id} 
-                    booking={booking} 
-                    tabType={tab}
-                    onPress={() => handleBookingPress(booking.id)}
-                    onReview={handleReviewPress}
-                    onRebook={handleRebookFromCard}
-                  />
-                ))
+                tabBookings.map((booking, index) => {
+                  const shouldAnimate = tab === activeTab && index < maxAnimatedItems;
+                  const delay = baseItemDelay + Math.min(index, maxAnimatedItems) * perItemDelay;
+                  return (
+                    <BookingCard 
+                      key={booking.id} 
+                      booking={booking} 
+                      tabType={tab}
+                      onPress={() => handleBookingPress(booking.id)}
+                      onReview={handleReviewPress}
+                      onRebook={handleRebookFromCard}
+                      animateContent={shouldAnimate}
+                      animationDelay={shouldAnimate ? delay : 0}
+                      contentVisible={isVisible && tab === activeTab}
+                    />
+                  );
+                })
               ) : (
-                <View className="items-center justify-center py-20">
-                  <Ionicons name="calendar-outline" size={64} color={colors.icon} />
-                  <Text className="text-lg font-semibold mt-4" style={{ color: colors.text }}>
-                    {tab === 'all' ? 'No bookings' : `No ${tab} bookings`}
-                  </Text>
-                  <Text className="text-sm mt-2" style={{ color: colors.icon }}>
-                    {tab === 'all' ? 'Your bookings will appear here' : `Your ${tab} bookings will appear here`}
-                  </Text>
-                </View>
+                tab === activeTab ? (
+                  <RisingItem delay={baseItemDelay} visible={isVisible}>
+                    <View className="items-center justify-center py-20">
+                      <Ionicons name="calendar-outline" size={64} color={colors.icon} />
+                      <Text className="text-lg font-semibold mt-4" style={{ color: colors.text }}>
+                        {tab === 'all' ? 'No bookings' : `No ${tab} bookings`}
+                      </Text>
+                      <Text className="text-sm mt-2" style={{ color: colors.icon }}>
+                        {tab === 'all' ? 'Your bookings will appear here' : `Your ${tab} bookings will appear here`}
+                      </Text>
+                    </View>
+                  </RisingItem>
+                ) : (
+                  <View className="items-center justify-center py-20">
+                    <Ionicons name="calendar-outline" size={64} color={colors.icon} />
+                    <Text className="text-lg font-semibold mt-4" style={{ color: colors.text }}>
+                      {tab === 'all' ? 'No bookings' : `No ${tab} bookings`}
+                    </Text>
+                    <Text className="text-sm mt-2" style={{ color: colors.icon }}>
+                      {tab === 'all' ? 'Your bookings will appear here' : `Your ${tab} bookings will appear here`}
+                    </Text>
+                  </View>
+                )
               )}
             </ScrollView>
           );
