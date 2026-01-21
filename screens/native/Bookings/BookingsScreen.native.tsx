@@ -59,9 +59,21 @@ interface BookingsScreenProps {
   onDetailsScreenChange?: (isActive: boolean) => void;
   onNavigateToProfile?: () => void;
   isActive?: boolean;
+  useNavigatorOverlays?: boolean;
+  onNavigateBookingDetails?: (bookingId: string) => void;
+  onNavigateRatingSpa?: (bookingId: string, fromReview?: boolean) => void;
+  onNavigateRatingTherapist?: (bookingId: string, fromReview?: boolean) => void;
 }
 
-export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProfile, isActive }: BookingsScreenProps = {}) {
+export default function BookingsScreen({
+  onDetailsScreenChange,
+  onNavigateToProfile,
+  isActive,
+  useNavigatorOverlays = false,
+  onNavigateBookingDetails,
+  onNavigateRatingSpa,
+  onNavigateRatingTherapist,
+}: BookingsScreenProps = {}) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -142,11 +154,16 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Handle booking card press
   const handleBookingPress = (bookingId: string) => {
+    if (useNavigatorOverlays) {
+      onNavigateBookingDetails?.(bookingId);
+      return;
+    }
     setSelectedBookingId(bookingId);
   };
 
   // Handle back from details screen
   const handleBack = () => {
+    if (useNavigatorOverlays) return;
     bookingDetailsTranslateX.value = withTiming(
       screenWidth,
       { duration: 300 },
@@ -158,6 +175,12 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Handle rate spa
   const handleRateSpa = () => {
+    if (useNavigatorOverlays) {
+      if (selectedBookingId) {
+        onNavigateRatingSpa?.(selectedBookingId, false);
+      }
+      return;
+    }
     if (selectedBookingId) {
       setRatingBookingId(selectedBookingId);
       setShowRatingScreen(true);
@@ -167,6 +190,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Handle back from rating screen
   const handleBackFromRating = () => {
+    if (useNavigatorOverlays) return;
     ratingSpaTranslateX.value = withTiming(
       screenWidth,
       { duration: 300 },
@@ -187,6 +211,12 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Handle rate therapist
   const handleRateTherapist = () => {
+    if (useNavigatorOverlays) {
+      if (selectedBookingId) {
+        onNavigateRatingTherapist?.(selectedBookingId, false);
+      }
+      return;
+    }
     if (selectedBookingId) {
       setTherapistRatingBookingId(selectedBookingId);
       setShowTherapistRatingScreen(true);
@@ -196,6 +226,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Handle back from therapist rating screen
   const handleBackFromTherapistRating = () => {
+    if (useNavigatorOverlays) return;
     ratingTherapistTranslateX.value = withTiming(
       screenWidth,
       { duration: 300 },
@@ -209,12 +240,17 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Handle review button press from BookingCard
   const handleReviewPress = (bookingId: string) => {
+    if (useNavigatorOverlays) {
+      onNavigateRatingSpa?.(bookingId, true);
+      return;
+    }
     setReviewBookingId(bookingId);
     setShowReviewChoiceModal(true);
   };
 
   // Handle choose spa from review modal
   const handleChooseSpa = () => {
+    if (useNavigatorOverlays) return;
     if (reviewBookingId) {
       setShowReviewChoiceModal(false);
       setRatingBookingId(reviewBookingId);
@@ -226,6 +262,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
   // Handle choose therapist from review modal
   const handleChooseTherapist = () => {
+    if (useNavigatorOverlays) return;
     if (reviewBookingId) {
       setShowReviewChoiceModal(false);
       setTherapistRatingBookingId(reviewBookingId);
@@ -358,8 +395,9 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
     }
   }, [selectedBookingId]);
 
-  // Notify parent when details screen is shown/hidden
+  // Notify parent when details screen is shown/hidden (skip when navigator owns overlays)
   useEffect(() => {
+    if (useNavigatorOverlays) return;
     onDetailsScreenChange?.(
       selectedBookingId !== null ||
       showRatingScreen ||
@@ -368,7 +406,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
       showPaymentSuccessfulScreen ||
       showPaymentFailedScreen
     );
-  }, [selectedBookingId, showRatingScreen, showTherapistRatingScreen, showBookAppointmentScreen, showPaymentSuccessfulScreen, showPaymentFailedScreen, onDetailsScreenChange]);
+  }, [selectedBookingId, showRatingScreen, showTherapistRatingScreen, showBookAppointmentScreen, showPaymentSuccessfulScreen, showPaymentFailedScreen, onDetailsScreenChange, useNavigatorOverlays]);
 
   // Animate overlays when state changes (enter)
   useEffect(() => {
@@ -438,7 +476,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
   }, [selectedBookingId, activeTab, screenWidth]);
 
   // If payment failed screen is active, show payment failed screen
-  if (showPaymentFailedScreen && bookingData) {
+  if (!useNavigatorOverlays && showPaymentFailedScreen && bookingData) {
     return (
       <PaymentFailedScreen
         bookingData={bookingData}
@@ -449,7 +487,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
   }
 
   // If payment successful screen is active, show payment successful screen
-  if (showPaymentSuccessfulScreen && bookingData) {
+  if (!useNavigatorOverlays && showPaymentSuccessfulScreen && bookingData) {
     return (
       <PaymentSuccessfulScreen
         bookingData={bookingData}
@@ -460,7 +498,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
   }
 
   // If BookAppointmentScreen is active from rebook, show it above everything else
-  if (showBookAppointmentScreen && rebookSalonDetails) {
+  if (!useNavigatorOverlays && showBookAppointmentScreen && rebookSalonDetails) {
     return (
       <BookAppointmentScreen
         salonDetails={rebookSalonDetails}
@@ -573,7 +611,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
 
       {/* Overlay stack for details and rating screens with horizontal transitions */}
       {/* Booking Details Screen */}
-      {selectedBookingId && (
+      {!useNavigatorOverlays && selectedBookingId && (
         <Animated.View
           style={[
             {
@@ -606,7 +644,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
       )}
 
       {/* Rating Spa Screen */}
-      {showRatingScreen && ratingBookingId && (
+      {!useNavigatorOverlays && showRatingScreen && ratingBookingId && (
         <Animated.View
           style={[
             {
@@ -635,7 +673,7 @@ export default function BookingsScreen({ onDetailsScreenChange, onNavigateToProf
       )}
 
       {/* Rating Therapist Screen */}
-      {showTherapistRatingScreen && therapistRatingBookingId && (
+      {!useNavigatorOverlays && showTherapistRatingScreen && therapistRatingBookingId && (
         <Animated.View
           style={[
             {

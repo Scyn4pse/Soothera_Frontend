@@ -38,18 +38,40 @@ interface BookingData {
 }
 
 interface HomeScreenProps {
+  // Legacy change notifications (for backward compatibility)
   onServicesScreenChange?: (isActive: boolean) => void;
   onTopRatedSalonsScreenChange?: (isActive: boolean) => void;
   onSalonDetailsScreenChange?: (isActive: boolean) => void;
   onBookAppointmentScreenChange?: (isActive: boolean) => void;
   onNotificationsScreenChange?: (isActive: boolean) => void;
   onNavigateToProfile?: () => void;
+
+  // Navigator-managed overlay mode
+  useNavigatorOverlays?: boolean;
+  onNavigateServices?: () => void;
+  onNavigateTopRated?: (options?: { autoOpenFilter?: boolean }) => void;
+  onNavigateSalonDetails?: (salonId: string) => void;
+  onNavigateBookAppointment?: (salonId: string) => void;
+  onNavigateNotifications?: () => void;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TRANSITION_DURATION = 300;
 
-export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScreenChange, onSalonDetailsScreenChange, onBookAppointmentScreenChange, onNotificationsScreenChange, onNavigateToProfile }: HomeScreenProps = {}) {
+export default function HomeScreen({
+  onServicesScreenChange,
+  onTopRatedSalonsScreenChange,
+  onSalonDetailsScreenChange,
+  onBookAppointmentScreenChange,
+  onNotificationsScreenChange,
+  onNavigateToProfile,
+  useNavigatorOverlays = false,
+  onNavigateServices,
+  onNavigateTopRated,
+  onNavigateSalonDetails,
+  onNavigateBookAppointment,
+  onNavigateNotifications,
+}: HomeScreenProps = {}) {
   const insets = useSafeAreaInsets();
   const [showServicesScreen, setShowServicesScreen] = useState(false);
   const [showTopRatedSalonsScreen, setShowTopRatedSalonsScreen] = useState(false);
@@ -70,28 +92,33 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
 
   // Notify parent when services screen state changes
   useEffect(() => {
+    if (useNavigatorOverlays) return;
     onServicesScreenChange?.(showServicesScreen);
-  }, [showServicesScreen, onServicesScreenChange]);
+  }, [showServicesScreen, onServicesScreenChange, useNavigatorOverlays]);
 
   // Notify parent when top rated salons screen state changes
   useEffect(() => {
+    if (useNavigatorOverlays) return;
     onTopRatedSalonsScreenChange?.(showTopRatedSalonsScreen);
-  }, [showTopRatedSalonsScreen, onTopRatedSalonsScreenChange]);
+  }, [showTopRatedSalonsScreen, onTopRatedSalonsScreenChange, useNavigatorOverlays]);
 
   // Notify parent when salon details screen state changes
   useEffect(() => {
+    if (useNavigatorOverlays) return;
     onSalonDetailsScreenChange?.(selectedSalonId !== null);
-  }, [selectedSalonId, onSalonDetailsScreenChange]);
+  }, [selectedSalonId, onSalonDetailsScreenChange, useNavigatorOverlays]);
 
   // Notify parent when book appointment screen state changes
   useEffect(() => {
+    if (useNavigatorOverlays) return;
     onBookAppointmentScreenChange?.(showBookAppointmentScreen);
-  }, [showBookAppointmentScreen, onBookAppointmentScreenChange]);
+  }, [showBookAppointmentScreen, onBookAppointmentScreenChange, useNavigatorOverlays]);
 
   // Notify parent when notifications screen state changes
   useEffect(() => {
+    if (useNavigatorOverlays) return;
     onNotificationsScreenChange?.(showNotificationsScreen);
-  }, [showNotificationsScreen, onNotificationsScreenChange]);
+  }, [showNotificationsScreen, onNotificationsScreenChange, useNavigatorOverlays]);
 
   // Animate overlay screens when state changes (enter)
   useEffect(() => {
@@ -145,11 +172,16 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
 
   // Handle salon press
   const handleSalonPress = (salonId: string) => {
+    if (useNavigatorOverlays) {
+      onNavigateSalonDetails?.(salonId);
+      return;
+    }
     setSelectedSalonId(salonId);
   };
 
   // Handle back from salon details
   const handleBackFromSalonDetails = () => {
+    if (useNavigatorOverlays) return;
     salonDetailsTranslateX.value = withTiming(
       SCREEN_WIDTH,
       { duration: TRANSITION_DURATION },
@@ -161,6 +193,7 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
 
   // Handle back from book appointment
   const handleBackFromBookAppointment = () => {
+    if (useNavigatorOverlays) return;
     bookAppointmentTranslateX.value = withTiming(
       SCREEN_WIDTH,
       { duration: TRANSITION_DURATION },
@@ -172,6 +205,7 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
 
   // Handle book appointment completion
   const handleBookAppointmentComplete = () => {
+    if (useNavigatorOverlays) return;
     bookAppointmentTranslateX.value = withTiming(
       SCREEN_WIDTH,
       { duration: TRANSITION_DURATION },
@@ -223,8 +257,8 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
     setShowNotificationsScreen(false);
   };
 
-  // If payment failed screen is active, show payment failed screen
-  if (showPaymentFailedScreen && bookingData) {
+  // If payment failed screen is active, show payment failed screen (only when not navigator-managed)
+  if (!useNavigatorOverlays && showPaymentFailedScreen && bookingData) {
     return (
       <PaymentFailedScreen
         bookingData={bookingData}
@@ -234,8 +268,8 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
     );
   }
 
-  // If payment successful screen is active, show payment successful screen
-  if (showPaymentSuccessfulScreen && bookingData) {
+  // If payment successful screen is active, show payment successful screen (only when not navigator-managed)
+  if (!useNavigatorOverlays && showPaymentSuccessfulScreen && bookingData) {
     return (
       <PaymentSuccessfulScreen
         bookingData={bookingData}
@@ -256,17 +290,33 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
         <RisingItem delay={0}>
           <Header 
             onProfilePress={onNavigateToProfile}
-            onNotificationPress={() => setShowNotificationsScreen(true)}
+            onNotificationPress={() => {
+              if (useNavigatorOverlays) {
+                onNavigateNotifications?.();
+              } else {
+                setShowNotificationsScreen(true);
+              }
+            }}
           />
         </RisingItem>
 
         {/* Search Bar and Filter */}
         <RisingItem delay={80}>
           <SearchBar 
-            onPress={() => setShowTopRatedSalonsScreen(true)} 
+            onPress={() => {
+              if (useNavigatorOverlays) {
+                onNavigateTopRated?.({ autoOpenFilter: false });
+              } else {
+                setShowTopRatedSalonsScreen(true);
+              }
+            }} 
             onFilterPress={() => {
-              setAutoOpenFilterModal(true);
-              setShowTopRatedSalonsScreen(true);
+              if (useNavigatorOverlays) {
+                onNavigateTopRated?.({ autoOpenFilter: true });
+              } else {
+                setAutoOpenFilterModal(true);
+                setShowTopRatedSalonsScreen(true);
+              }
             }}
           />
         </RisingItem>
@@ -279,10 +329,20 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
         {/* Services Section */}
         <RisingItem delay={200}>
           <Services
-            onSeeAll={() => setShowServicesScreen(true)}
+            onSeeAll={() => {
+              if (useNavigatorOverlays) {
+                onNavigateServices?.();
+              } else {
+                setShowServicesScreen(true);
+              }
+            }}
             onServicePress={() => {
-              setAutoOpenFilterModal(false);
-              setShowTopRatedSalonsScreen(true);
+              if (useNavigatorOverlays) {
+                onNavigateTopRated?.({ autoOpenFilter: false });
+              } else {
+                setAutoOpenFilterModal(false);
+                setShowTopRatedSalonsScreen(true);
+              }
             }}
           />
         </RisingItem>
@@ -290,157 +350,167 @@ export default function HomeScreen({ onServicesScreenChange, onTopRatedSalonsScr
         {/* Top Rated Salons Section */}
         <RisingItem delay={260}>
           <TopRatedSalons 
-            onSeeAll={() => setShowTopRatedSalonsScreen(true)}
+            onSeeAll={() => {
+              if (useNavigatorOverlays) {
+                onNavigateTopRated?.({ autoOpenFilter: false });
+              } else {
+                setShowTopRatedSalonsScreen(true);
+              }
+            }}
             onSalonPress={handleSalonPress}
           />
         </RisingItem>
       </ScrollView>
 
-      {/* Overlay stack with horizontal "next page" transitions */}
-      {/* Services Screen */}
-      {showServicesScreen && (
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 5,
-            },
-            servicesAnimatedStyle,
-          ]}
-        >
-          <ServicesScreen
-            onBack={() => {
-              servicesTranslateX.value = withTiming(
-                SCREEN_WIDTH,
-                { duration: TRANSITION_DURATION },
-                () => {
-                  runOnJS(setShowServicesScreen)(false);
-                }
-              );
-            }}
-            onServicePress={() => {
-              // IMPORTANT: don't close Services first, otherwise Home flashes.
-              // Instead: keep Services mounted underneath and slide TopRated in on top.
-              setTopRatedReturnToServices(true);
-              setAutoOpenFilterModal(false);
-              setShowTopRatedSalonsScreen(true);
-            }}
-          />
-        </Animated.View>
-      )}
-
-      {/* Top Rated Salons Screen */}
-      {showTopRatedSalonsScreen && (
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 6,
-            },
-            topRatedAnimatedStyle,
-          ]}
-        >
-          <TopRatedSalonsScreen 
-            onBack={() => {
-              topRatedTranslateX.value = withTiming(
-                SCREEN_WIDTH,
-                { duration: TRANSITION_DURATION },
-                () => {
-                  runOnJS(setShowTopRatedSalonsScreen)(false);
-                  runOnJS(setAutoOpenFilterModal)(false);
-                  runOnJS(setTopRatedReturnToServices)(false);
-                }
-              );
-            }}
-            onSalonPress={handleSalonPress}
-            autoOpenFilter={autoOpenFilterModal}
-          />
-        </Animated.View>
-      )}
-
-      {/* Salon Details Screen */}
-      {selectedSalonId && (
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 7,
-            },
-            salonDetailsAnimatedStyle,
-          ]}
-        >
-          {(() => {
-            const salonDetails = getSalonDetails(selectedSalonId);
-            if (!salonDetails) return null;
-            return (
-              <SalonDetailsScreen
-                salonDetails={salonDetails}
-                onBack={handleBackFromSalonDetails}
-                onBookAppointment={() => {
-                  setShowBookAppointmentScreen(true);
+      {/* Overlay stack with horizontal "next page" transitions (disabled when navigator manages overlays) */}
+      {!useNavigatorOverlays && (
+        <>
+          {/* Services Screen */}
+          {showServicesScreen && (
+            <Animated.View
+              style={[
+                {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 5,
+                },
+                servicesAnimatedStyle,
+              ]}
+            >
+              <ServicesScreen
+                onBack={() => {
+                  servicesTranslateX.value = withTiming(
+                    SCREEN_WIDTH,
+                    { duration: TRANSITION_DURATION },
+                    () => {
+                      runOnJS(setShowServicesScreen)(false);
+                    }
+                  );
+                }}
+                onServicePress={() => {
+                  // IMPORTANT: don't close Services first, otherwise Home flashes.
+                  // Instead: keep Services mounted underneath and slide TopRated in on top.
+                  setTopRatedReturnToServices(true);
+                  setAutoOpenFilterModal(false);
+                  setShowTopRatedSalonsScreen(true);
                 }}
               />
-            );
-          })()}
-        </Animated.View>
-      )}
+            </Animated.View>
+          )}
 
-      {/* Book Appointment Screen */}
-      {showBookAppointmentScreen && selectedSalonId && (
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 8,
-            },
-            bookAppointmentAnimatedStyle,
-          ]}
-        >
-          {(() => {
-            const salonDetails = getSalonDetails(selectedSalonId);
-            if (!salonDetails) return null;
-            return (
-              <BookAppointmentScreen
-                salonDetails={salonDetails}
-                onBack={handleBackFromBookAppointment}
-                onComplete={handleBookAppointmentComplete}
-                onPaymentSuccess={handlePaymentSuccess}
+          {/* Top Rated Salons Screen */}
+          {showTopRatedSalonsScreen && (
+            <Animated.View
+              style={[
+                {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 6,
+                },
+                topRatedAnimatedStyle,
+              ]}
+            >
+              <TopRatedSalonsScreen 
+                onBack={() => {
+                  topRatedTranslateX.value = withTiming(
+                    SCREEN_WIDTH,
+                    { duration: TRANSITION_DURATION },
+                    () => {
+                      runOnJS(setShowTopRatedSalonsScreen)(false);
+                      runOnJS(setAutoOpenFilterModal)(false);
+                      runOnJS(setTopRatedReturnToServices)(false);
+                    }
+                  );
+                }}
+                onSalonPress={handleSalonPress}
+                autoOpenFilter={autoOpenFilterModal}
               />
-            );
-          })()}
-        </Animated.View>
-      )}
+            </Animated.View>
+          )}
 
-      {/* Notifications Screen (no horizontal animation required) */}
-      {showNotificationsScreen && (
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 9,
-          }}
-        >
-          <NotificationsScreen onBack={handleBackFromNotifications} />
-        </View>
+          {/* Salon Details Screen */}
+          {selectedSalonId && (
+            <Animated.View
+              style={[
+                {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 7,
+                },
+                salonDetailsAnimatedStyle,
+              ]}
+            >
+              {(() => {
+                const salonDetails = getSalonDetails(selectedSalonId);
+                if (!salonDetails) return null;
+                return (
+                  <SalonDetailsScreen
+                    salonDetails={salonDetails}
+                    onBack={handleBackFromSalonDetails}
+                    onBookAppointment={() => {
+                      setShowBookAppointmentScreen(true);
+                    }}
+                  />
+                );
+              })()}
+            </Animated.View>
+          )}
+
+          {/* Book Appointment Screen */}
+          {showBookAppointmentScreen && selectedSalonId && (
+            <Animated.View
+              style={[
+                {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 8,
+                },
+                bookAppointmentAnimatedStyle,
+              ]}
+            >
+              {(() => {
+                const salonDetails = getSalonDetails(selectedSalonId);
+                if (!salonDetails) return null;
+                return (
+                  <BookAppointmentScreen
+                    salonDetails={salonDetails}
+                    onBack={handleBackFromBookAppointment}
+                    onComplete={handleBookAppointmentComplete}
+                    onPaymentSuccess={handlePaymentSuccess}
+                  />
+                );
+              })()}
+            </Animated.View>
+          )}
+
+          {/* Notifications Screen (no horizontal animation required) */}
+          {showNotificationsScreen && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 9,
+              }}
+            >
+              <NotificationsScreen onBack={handleBackFromNotifications} />
+            </View>
+          )}
+        </>
       )}
     </View>
   );

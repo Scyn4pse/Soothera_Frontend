@@ -15,7 +15,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 
-interface Conversation {
+export interface Conversation {
   id: string;
   name: string;
   lastMessage: string;
@@ -40,12 +40,14 @@ const mockConversations: Conversation[] = [
 interface InboxScreenProps {
   onChatRoomChange?: (isActive: boolean) => void;
   onNavigateToProfile?: () => void;
+  useNavigatorOverlays?: boolean;
+  onNavigateChatRoom?: (conversation: Conversation) => void;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TRANSITION_DURATION = 300;
 
-export default function InboxScreen({ onChatRoomChange, onNavigateToProfile }: InboxScreenProps = {}) {
+export default function InboxScreen({ onChatRoomChange, onNavigateToProfile, useNavigatorOverlays = false, onNavigateChatRoom }: InboxScreenProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
@@ -66,6 +68,13 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile }: I
 
   // Handle conversation press
   const handleConversationPress = (conversationId: string) => {
+    if (useNavigatorOverlays) {
+      const conversation = mockConversations.find(c => c.id === conversationId);
+      if (conversation) {
+        onNavigateChatRoom?.(conversation);
+      }
+      return;
+    }
     setSelectedConversationId(conversationId);
   };
 
@@ -199,7 +208,7 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile }: I
       </ScrollView>
 
       {/* Chat Room overlay with horizontal "next page" transition */}
-      {selectedConversationId && (
+      {!useNavigatorOverlays && selectedConversationId && (
         <Animated.View
           style={[
             {
