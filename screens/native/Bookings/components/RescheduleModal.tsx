@@ -4,6 +4,7 @@ import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import SuccessModal from './SuccessModal';
 
 export interface RescheduleModalProps {
   visible: boolean;
@@ -23,6 +24,15 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const isDark = colorScheme === 'dark';
+
+  // State for success/failure modal
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successModalVariant, setSuccessModalVariant] = useState<'success' | 'error'>('success');
+  const [successModalTitle, setSuccessModalTitle] = useState('Booking Rescheduled!');
+  const [successModalMessage, setSuccessModalMessage] = useState(
+    "Your booking has been successfully rescheduled. Please wait for the confirmation email."
+  );
+  const [successModalActionLabel, setSuccessModalActionLabel] = useState<string | undefined>(undefined);
 
   // Initialize with current date/time or provided values
   const [selectedDate, setSelectedDate] = useState<Date>(
@@ -254,31 +264,59 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
     combinedDateTime.setSeconds(0);
     combinedDateTime.setMilliseconds(0);
 
+    // Show success state first
+    onCancel();
+    setSuccessModalVariant('success');
+    setSuccessModalTitle('Booking Rescheduled!');
+    setSuccessModalMessage("Your booking has been successfully rescheduled. Please wait for the confirmation email.");
+    setSuccessModalActionLabel('Continue');
+    setShowSuccessModal(true);
+
+    // Call the onConfirm callback (e.g., API call)
     onConfirm(selectedDate, selectedTime);
   };
 
+  // Handle success modal close
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    setSuccessModalActionLabel(undefined);
+  };
+
+  // Handle success modal action (success -> failed content, failed -> close)
+  const handleSuccessModalAction = () => {
+    if (successModalVariant === 'success') {
+      setSuccessModalVariant('error');
+      setSuccessModalTitle('Reschedule Failed');
+      setSuccessModalMessage('We could not reschedule your booking. Please try again.');
+      setSuccessModalActionLabel('Close');
+    } else {
+      handleSuccessModalClose();
+    }
+  };
+
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onCancel}
-    >
-      <TouchableWithoutFeedback onPress={onCancel}>
-        <View className="flex-1 bg-black/50 justify-center items-center p-5">
-          <TouchableWithoutFeedback>
-            <View
-              className={`rounded-2xl p-6 w-full max-w-sm ${
-                isDark ? 'bg-[#1f1f1f]' : 'bg-white'
-              }`}
-              style={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
-            >
+    <>
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        onRequestClose={onCancel}
+      >
+        <TouchableWithoutFeedback onPress={onCancel}>
+          <View className="flex-1 bg-black/50 justify-center items-center p-5">
+            <TouchableWithoutFeedback>
+              <View
+                className={`rounded-2xl p-6 w-full max-w-sm ${
+                  isDark ? 'bg-[#1f1f1f]' : 'bg-white'
+                }`}
+                style={{
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }}
+              >
               {/* Icon */}
               <View className="items-center mb-4">
                 <View
@@ -440,6 +478,18 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
         </View>
       </TouchableWithoutFeedback>
     </Modal>
+
+    {/* Success Modal */}
+    <SuccessModal
+      visible={showSuccessModal}
+      title={successModalTitle}
+      message={successModalMessage}
+      variant={successModalVariant}
+      actionLabel={successModalActionLabel}
+      onClose={handleSuccessModalClose}
+      onAction={handleSuccessModalAction}
+    />
+    </>
   );
 };
 
