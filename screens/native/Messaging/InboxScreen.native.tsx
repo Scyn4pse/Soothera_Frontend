@@ -8,6 +8,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Header } from '@/components/native/Header';
 import { RisingItem } from '@/components/native/RisingItem';
 import ChatRoomScreen from './ChatRoomScreen.native';
+import InboxTabNavigation from './components/InboxTabNavigation';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -23,18 +24,19 @@ export interface Conversation {
   unreadCount?: number;
   avatar?: string;
   isOnline?: boolean;
+  type?: 'salon' | 'therapist' | 'chatbot';
 }
 
 // Mock data for conversations
 const mockConversations: Conversation[] = [
-  { id: '1', name: 'John Carlos', lastMessage: 'When you will be here?', timestamp: '12:40 PM', unreadCount: 3 },
-  { id: '2', name: 'Nicki', lastMessage: 'Hey Man!', timestamp: '01:40 AM' },
-  { id: '3', name: 'Martin Luther', lastMessage: 'Bro Dinner?', timestamp: '04:40 PM', unreadCount: 4 },
-  { id: '4', name: 'Steve Smith', lastMessage: 'On my way!', timestamp: '09:30 AM' },
-  { id: '5', name: 'Sarah', lastMessage: 'How cute! isn\'t it?', timestamp: '08:40 AM' },
-  { id: '6', name: 'Nelson Nail', lastMessage: 'Meeting off, call me!', timestamp: '10:10 AM', unreadCount: 2 },
-  { id: '7', name: 'Amanda', lastMessage: 'Waiting for you mate!', timestamp: '03:25 PM' },
-  { id: '8', name: 'Warner Lems', lastMessage: 'Can you please pick me up?', timestamp: '07:00 AM', unreadCount: 1 },
+  { id: '1', name: 'John Carlos', lastMessage: 'When you will be here?', timestamp: '12:40 PM', unreadCount: 3, type: 'salon' },
+  { id: '2', name: 'Nicki', lastMessage: 'Hey Man!', timestamp: '01:40 AM', type: 'therapist' },
+  { id: '3', name: 'Martin Luther', lastMessage: 'Bro Dinner?', timestamp: '04:40 PM', unreadCount: 4, type: 'salon' },
+  { id: '4', name: 'Steve Smith', lastMessage: 'On my way!', timestamp: '09:30 AM', type: 'therapist' },
+  { id: '5', name: 'Sarah', lastMessage: 'How cute! isn\'t it?', timestamp: '08:40 AM', type: 'chatbot' },
+  { id: '6', name: 'Nelson Nail', lastMessage: 'Meeting off, call me!', timestamp: '10:10 AM', unreadCount: 2, type: 'salon' },
+  { id: '7', name: 'Amanda', lastMessage: 'Waiting for you mate!', timestamp: '03:25 PM', type: 'therapist' },
+  { id: '8', name: 'Warner Lems', lastMessage: 'Can you please pick me up?', timestamp: '07:00 AM', unreadCount: 1, type: 'chatbot' },
 ];
 
 interface InboxScreenProps {
@@ -54,6 +56,7 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile, use
   const insets = useSafeAreaInsets();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'all' | 'salon' | 'therapist' | 'chatbot'>('all');
   const maxAnimatedItems = 8;
   const baseItemDelay = 120;
   const perItemDelay = 55;
@@ -61,11 +64,18 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile, use
   // Shared value for horizontal slide transition
   const chatTranslateX = useSharedValue(SCREEN_WIDTH);
 
-  // Filter conversations based on search query
-  const filteredConversations = mockConversations.filter(conv =>
-    conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter conversations based on active tab and search query
+  const filteredConversations = mockConversations.filter(conv => {
+    // Filter by tab
+    const matchesTab = activeTab === 'all' || conv.type === activeTab;
+    
+    // Filter by search query
+    const matchesSearch = searchQuery === '' || 
+      conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesTab && matchesSearch;
+  });
 
   // Handle conversation press
   const handleConversationPress = (conversationId: string) => {
@@ -119,8 +129,8 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile, use
 
       {/* Search Bar */}
       <RisingItem delay={60}>
-        <View className="px-5 py-2 mb-4">
-          <View className="flex-row items-center bg-gray-100 rounded-full px-4 py-1">
+        <View className="px-5 py-2 mb-2">
+          <View className="flex-row items-center bg-gray-100 dark:bg-[#2a2a2a] rounded-full px-4 py-1">
             <Ionicons name="search-outline" size={20} color={colors.icon} />
             <TextInput
               placeholder="Search"
@@ -132,6 +142,14 @@ export default function InboxScreen({ onChatRoomChange, onNavigateToProfile, use
             />
           </View>
         </View>
+      </RisingItem>
+
+      {/* Tab Navigation */}
+      <RisingItem delay={80}>
+        <InboxTabNavigation 
+          activeTab={activeTab} 
+          onTabPress={setActiveTab} 
+        />
       </RisingItem>
 
       {/* Conversations List */}

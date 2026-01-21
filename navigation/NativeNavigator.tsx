@@ -17,7 +17,8 @@ import BookAppointmentScreen from '../screens/native/Home/BookAppointmentScreen.
 import PaymentSuccessfulScreen from '../screens/native/Home/PaymentSuccessfulScreen.native';
 import PaymentFailedScreen from '../screens/native/Home/PaymentFailedScreen.native';
 import NotificationsScreen from '../screens/native/Notifications/NotificationsScreen.native';
-import { getSalonDetails } from '../screens/native/Home/configs/mockData';
+import { getSalonDetails, topRatedSalons } from '../screens/native/Home/configs/mockData';
+import type { Booking } from '../screens/native/Bookings/types/Booking';
 import BookingsScreen from '../screens/native/Bookings/BookingsScreen.native';
 import BookingDetailsScreen from '../screens/native/Bookings/BookingDetailsScreen.native';
 import RatingSpaScreen from '../screens/native/Bookings/RatingSpaScreen.native';
@@ -282,6 +283,26 @@ export default function NativeNavigator() {
     );
   };
 
+  // Re-book handler - navigate to BookAppointmentScreen with booking details
+  const handleRebook = (booking: Booking) => {
+    // Find matching salon by name from top rated salons
+    const matchingSalon = topRatedSalons.find((salon) => salon.name === booking.spaName);
+    if (!matchingSalon) {
+      console.warn('No matching salon found for spa name:', booking.spaName);
+      return;
+    }
+
+    const salonDetails = getSalonDetails(matchingSalon.id);
+    if (!salonDetails) {
+      console.warn('No salon details found for salon id:', matchingSalon.id);
+      return;
+    }
+
+    // Navigate to BookAppointmentScreen with the salon details
+    setHomeSelectedSalonId(matchingSalon.id);
+    setHomeBookVisible(true);
+  };
+
   // Centralized hardware back handling
   useEffect(() => {
     const onBackPress = () => {
@@ -383,6 +404,7 @@ export default function NativeNavigator() {
             onNavigateRatingSpa={openBookingRatingSpa}
             onNavigateRatingTherapist={openBookingRatingTherapist}
             onNavigateNotifications={openHomeNotifications}
+            onNavigateRebook={handleRebook}
           />
         </RisingPage>
 
@@ -584,9 +606,25 @@ export default function NativeNavigator() {
                 onBack={closeBookingDetails}
                 onRateSpa={() => openBookingRatingSpa(bookingSelectedId)}
                 onRateTherapist={() => openBookingRatingTherapist(bookingSelectedId)}
-                onRebook={() => {}}
+                onRebook={() => {
+                  const bookingDetails = getBookingDetails(bookingSelectedId);
+                  if (bookingDetails) {
+                    // Find matching salon by name
+                    const matchingSalon = topRatedSalons.find((salon) => salon.name === bookingDetails.spaName);
+                    if (matchingSalon) {
+                      const salonDetails = getSalonDetails(matchingSalon.id);
+                      if (salonDetails) {
+                        setHomeSelectedSalonId(matchingSalon.id);
+                        setHomeBookVisible(true);
+                      }
+                    }
+                  }
+                }}
                 onReschedule={() => {}}
-                onCancel={() => {}}
+                onCancel={async () => {
+                  // Cancel booking logic - this will be handled by the confirmation modal in BookingDetailsScreen
+                  console.log('Cancel booking:', bookingSelectedId);
+                }}
               />
             );
           })()}

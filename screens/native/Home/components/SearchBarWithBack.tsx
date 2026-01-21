@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, primaryColor } from '@/constants/theme';
 import { FilterModal, getPlaceholderForFilter } from './FilterModal';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface SearchBarWithBackProps {
   onBack?: () => void;
@@ -28,6 +29,7 @@ export function SearchBarWithBack({
 }: SearchBarWithBackProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
   const inputRef = useRef<TextInput>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({
@@ -77,7 +79,7 @@ export function SearchBarWithBack({
   return (
     <>
       <View className="flex-row items-center px-5 py-2 mb-4" 
-      style={{paddingTop: 40}}>
+      style={{paddingTop: insets.top}}>
         {/* Back Button */}
         <TouchableOpacity 
           onPress={onBack}

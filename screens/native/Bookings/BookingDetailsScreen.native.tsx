@@ -9,6 +9,7 @@ import { TransparentHeader } from '@/components/native/TransparentHeader';
 import { BookingDetails } from './types/BookingDetails';
 import { BOOKING_STATUS } from './types/Booking';
 import RescheduleModal from './components/RescheduleModal';
+import { useConfirmation } from '@/components/native/ConfirmationModalContext';
 
 // Try to load react-native-maps at runtime for mobile. Do not import statically
 // so the web build / TS server won't fail if the native lib isn't installed.
@@ -262,6 +263,7 @@ export default function BookingDetailsScreen({
   const insets = useSafeAreaInsets();
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
+  const { showConfirmation } = useConfirmation();
 
   // Handle Get Directions
   const handleGetDirections = async () => {
@@ -636,7 +638,20 @@ export default function BookingDetailsScreen({
             <TouchableOpacity
               className="flex-1 flex-row items-center justify-center px-4 py-4 rounded-xl border"
               style={{ borderColor: '#EF4444', backgroundColor: 'white' }}
-              onPress={onCancel}
+              onPress={async () => {
+                const confirmed = await showConfirmation({
+                  title: 'Cancel Booking',
+                  message: 'Are you sure you want to cancel this booking? This action cannot be undone.',
+                  confirmText: 'Cancel Booking',
+                  cancelText: 'Keep Booking',
+                  icon: 'warning-outline',
+                  iconColor: '#EF4444',
+                  confirmButtonColor: '#EF4444',
+                });
+                if (confirmed) {
+                  onCancel?.();
+                }
+              }}
             >
               <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
               <Text className="text-base font-semibold ml-2" style={{ color: '#EF4444' }}>

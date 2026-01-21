@@ -4,6 +4,7 @@ import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface NotificationItem {
   id: string;
@@ -24,6 +25,7 @@ interface NotificationsScreenProps {
 export default function NotificationsScreen({ onBack }: NotificationsScreenProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
 
   // Mock notification data
   const notifications: NotificationItem[] = [
@@ -151,7 +153,7 @@ export default function NotificationsScreen({ onBack }: NotificationsScreenProps
   return (
     <View className="flex-1 bg-white dark:bg-[#151718]">
       {/* Header */}
-      <View className="flex-row items-center px-5 pt-4 pb-4 border-b border-gray-200 dark:border-[#2a2a2a]" style={{paddingTop: 40}}>
+      <View className="flex-row items-center px-5 pt-4 pb-4 border-b border-gray-200 dark:border-[#2a2a2a]" style={{paddingTop: insets.top}}>
         <TouchableOpacity
           onPress={onBack}
           className="mr-4"

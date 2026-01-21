@@ -4,6 +4,7 @@ import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Message {
   id: string;
@@ -60,6 +61,7 @@ const mockMessages: Message[] = [
 export default function ChatRoomScreen({ conversation, onBack }: ChatRoomScreenProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -117,7 +119,7 @@ export default function ChatRoomScreen({ conversation, onBack }: ChatRoomScreenP
   const inputAreaHeight = 60;
 
   return (
-    <View className="flex-1 bg-white dark:bg-[#151718]">
+    <View className="flex-1 bg-white dark:bg-[#151718]" style={{paddingTop: insets.top}}>
       {/* Header */}
       <View
         className="flex-row items-center px-5 py-3 border-b border-gray-200 dark:border-[#2a2a2a]"

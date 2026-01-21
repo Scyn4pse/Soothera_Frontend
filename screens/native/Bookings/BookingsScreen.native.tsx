@@ -64,6 +64,7 @@ interface BookingsScreenProps {
   onNavigateRatingSpa?: (bookingId: string, fromReview?: boolean) => void;
   onNavigateRatingTherapist?: (bookingId: string, fromReview?: boolean) => void;
   onNavigateNotifications?: () => void;
+  onNavigateRebook?: (booking: Booking) => void;
 }
 
 export default function BookingsScreen({
@@ -75,6 +76,7 @@ export default function BookingsScreen({
   onNavigateRatingSpa,
   onNavigateRatingTherapist,
   onNavigateNotifications,
+  onNavigateRebook,
 }: BookingsScreenProps = {}) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -242,34 +244,37 @@ export default function BookingsScreen({
 
   // Handle review button press from BookingCard
   const handleReviewPress = (bookingId: string) => {
-    if (useNavigatorOverlays) {
-      onNavigateRatingSpa?.(bookingId, true);
-      return;
-    }
+    // Always show the ReviewChoiceModal first, regardless of navigator overlays
     setReviewBookingId(bookingId);
     setShowReviewChoiceModal(true);
   };
 
   // Handle choose spa from review modal
   const handleChooseSpa = () => {
-    if (useNavigatorOverlays) return;
     if (reviewBookingId) {
       setShowReviewChoiceModal(false);
-      setRatingBookingId(reviewBookingId);
-      setShowRatingScreen(true);
-      setIsFromReviewButton(true); // Track that we came from review button
+      if (useNavigatorOverlays) {
+        onNavigateRatingSpa?.(reviewBookingId, true);
+      } else {
+        setRatingBookingId(reviewBookingId);
+        setShowRatingScreen(true);
+        setIsFromReviewButton(true); // Track that we came from review button
+      }
       setReviewBookingId(null);
     }
   };
 
   // Handle choose therapist from review modal
   const handleChooseTherapist = () => {
-    if (useNavigatorOverlays) return;
     if (reviewBookingId) {
       setShowReviewChoiceModal(false);
-      setTherapistRatingBookingId(reviewBookingId);
-      setShowTherapistRatingScreen(true);
-      setIsFromReviewButton(true); // Track that we came from review button
+      if (useNavigatorOverlays) {
+        onNavigateRatingTherapist?.(reviewBookingId, true);
+      } else {
+        setTherapistRatingBookingId(reviewBookingId);
+        setShowTherapistRatingScreen(true);
+        setIsFromReviewButton(true); // Track that we came from review button
+      }
       setReviewBookingId(null);
     }
   };
@@ -316,6 +321,10 @@ export default function BookingsScreen({
 
   // Handle rebook from booking card button
   const handleRebookFromCard = (booking: Booking) => {
+    if (useNavigatorOverlays) {
+      onNavigateRebook?.(booking);
+      return;
+    }
     openRebookForSpaName(booking.spaName);
   };
 
