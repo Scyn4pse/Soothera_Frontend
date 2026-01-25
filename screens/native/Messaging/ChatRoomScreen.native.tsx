@@ -5,6 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Conversation } from './InboxScreen.native';
+import { getSalonDetails } from '../Home/configs/mockData';
+import { topRatedSalons } from '../Home/configs/mockData';
 
 interface Message {
   id: string;
@@ -16,16 +19,6 @@ interface Message {
     title: string;
     artist?: string;
   };
-}
-
-interface Conversation {
-  id: string;
-  name: string;
-  lastMessage: string;
-  timestamp: string;
-  unreadCount?: number;
-  avatar?: string;
-  isOnline?: boolean;
 }
 
 interface ChatRoomScreenProps {
@@ -67,6 +60,49 @@ export default function ChatRoomScreen({ conversation, onBack }: ChatRoomScreenP
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const textInputRef = useRef<TextInput>(null);
+
+  // Get related information based on conversation type
+  const getConversationInfo = () => {
+    if (conversation.type === 'salon' && conversation.salonId) {
+      const salon = topRatedSalons.find(s => s.id === conversation.salonId);
+      if (salon) {
+        return {
+          name: salon.name,
+          subtitle: salon.location,
+          avatar: salon.image,
+          rating: salon.rating,
+        };
+      }
+    } else if (conversation.type === 'therapist' && conversation.salonTherapistId && conversation.therapistId) {
+      const salonDetails = getSalonDetails(conversation.salonTherapistId);
+      if (salonDetails) {
+        const therapist = salonDetails.therapists.find(t => t.id === conversation.therapistId);
+        if (therapist) {
+          return {
+            name: therapist.name,
+            subtitle: `${therapist.title} at ${salonDetails.name}`,
+            avatar: therapist.image,
+            rating: therapist.rating,
+          };
+        }
+      }
+    } else if (conversation.type === 'chatbot') {
+      return {
+        name: conversation.name,
+        subtitle: 'AI Assistant',
+        avatar: undefined,
+        rating: undefined,
+      };
+    }
+    return {
+      name: conversation.name,
+      subtitle: conversation.isOnline ? 'Online' : 'Offline',
+      avatar: conversation.avatar,
+      rating: undefined,
+    };
+  };
+
+  const conversationInfo = getConversationInfo();
 
   // Handle keyboard show/hide
   useEffect(() => {
@@ -129,18 +165,19 @@ export default function ChatRoomScreen({ conversation, onBack }: ChatRoomScreenP
         </TouchableOpacity>
 
         {/* Profile Picture */}
-        <View className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#2a2a2a] items-center justify-center mr-3">
-          {conversation.avatar ? (
+        <View className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#2a2a2a] items-center justify-center mr-3 overflow-hidden">
+          {conversationInfo.avatar ? (
             <Image
-              source={{ uri: conversation.avatar }}
+              source={conversationInfo.avatar}
               className="w-10 h-10 rounded-full"
+              resizeMode="cover"
             />
           ) : (
             <Text
               className="text-base font-semibold"
               style={{ color: colors.primary }}
             >
-              {conversation.name.charAt(0).toUpperCase()}
+              {conversationInfo.name.charAt(0).toUpperCase()}
             </Text>
           )}
         </View>
@@ -151,14 +188,30 @@ export default function ChatRoomScreen({ conversation, onBack }: ChatRoomScreenP
             className="text-base font-semibold"
             style={{ color: colors.text }}
           >
-            {conversation.name}
+            {conversationInfo.name}
           </Text>
-          <Text
-            className="text-xs"
-            style={{ color: colors.primary }}
-          >
-            Online
-          </Text>
+          <View className="flex-row items-center">
+            <Text
+              className="text-xs mr-2"
+              style={{ color: colors.icon }}
+            >
+              {conversationInfo.subtitle}
+            </Text>
+            {conversationInfo.rating !== undefined && (
+              <View className="flex-row items-center">
+                <Ionicons name="star" size={12} color="#FFD700" />
+                <Text
+                  className="text-xs ml-1"
+                  style={{ color: colors.icon }}
+                >
+                  {conversationInfo.rating.toFixed(1)}
+                </Text>
+              </View>
+            )}
+            {conversation.isOnline && (
+              <View className="ml-2 w-2 h-2 rounded-full" style={{ backgroundColor: '#10B981' }} />
+            )}
+          </View>
         </View>
       </View>
 
