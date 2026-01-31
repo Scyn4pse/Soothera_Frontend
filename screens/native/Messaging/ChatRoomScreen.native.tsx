@@ -26,29 +26,16 @@ interface ChatRoomScreenProps {
   onBack: () => void;
 }
 
-// Mock messages
+// Mock messages – massage appointment conversation
 const mockMessages: Message[] = [
-  { id: '1', text: 'When you will be here?', isOutgoing: false, timestamp: '12:30 PM' },
-  { id: '2', text: 'On my way! Mate', isOutgoing: true, timestamp: '12:32 PM' },
-  { id: '3', text: 'Just waiting for you!!!!!!!!!!', isOutgoing: false, timestamp: '12:35 PM' },
-  { id: '4', text: 'Just few minutes!', isOutgoing: true, timestamp: '12:36 PM' },
-  { id: '5', text: 'Bro have you listen to this song?', isOutgoing: false, timestamp: '12:40 PM' },
-  {
-    id: '6',
-    text: '',
-    isOutgoing: true,
-    timestamp: '12:42 PM',
-    media: { type: 'music', title: 'HALSEY - WITHOUT ME' }
-  },
-  { id: '7', text: 'Yep Mate, Crazy!!!', isOutgoing: true, timestamp: '12:43 PM' },
-  { id: '8', text: 'Check this out!!!!', isOutgoing: true, timestamp: '12:45 PM' },
-  {
-    id: '9',
-    text: '',
-    isOutgoing: true,
-    timestamp: '12:46 PM',
-    media: { type: 'music', title: 'PERFECT - JAMES PERRY REMIX' }
-  },
+  { id: '1', text: 'Hi! Just confirming your massage appointment for tomorrow at 2:00 PM.', isOutgoing: false, timestamp: '10:15 AM' },
+  { id: '2', text: 'Yes, that works for me. Thank you!', isOutgoing: true, timestamp: '10:18 AM' },
+  { id: '3', text: 'Great! Any areas you’d like us to focus on?', isOutgoing: false, timestamp: '10:20 AM' },
+  { id: '4', text: 'My shoulders and lower back have been really tense.', isOutgoing: true, timestamp: '10:22 AM' },
+  { id: '5', text: 'We’ll give extra attention to those areas. Do you prefer deep tissue or Swedish?', isOutgoing: false, timestamp: '10:25 AM' },
+  { id: '6', text: 'Deep tissue please.', isOutgoing: true, timestamp: '10:26 AM' },
+  { id: '7', text: 'Noted. See you tomorrow at 2 PM. Please arrive 10 mins early if it’s your first visit.', isOutgoing: false, timestamp: '10:28 AM' },
+  { id: '8', text: 'Will do. Looking forward to it!', isOutgoing: true, timestamp: '10:30 AM' },
 ];
 
 export default function ChatRoomScreen({ conversation, onBack }: ChatRoomScreenProps) {
