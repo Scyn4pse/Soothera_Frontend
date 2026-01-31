@@ -40,6 +40,7 @@ interface ProfileScreenProps {
   onNavigateToPasswordChange?: () => void;
   onNavigateToNotifications?: () => void;
   onNavigateToHelp?: () => void;
+  onNavigateToFavorites?: () => void;
   onNavigateSalonDetails?: (salonId: string) => void;
 }
 
@@ -49,6 +50,7 @@ export default function ProfileScreen({
   onNavigateToPasswordChange,
   onNavigateToNotifications,
   onNavigateToHelp,
+  onNavigateToFavorites,
   onNavigateSalonDetails,
 }: ProfileScreenProps = {}) {
   const colorScheme = useColorScheme();
@@ -143,7 +145,7 @@ export default function ProfileScreen({
             title="Your Favorites"
             salons={topRatedSalons.slice(0, 3)}
             showSeeAllInHeader
-            onSeeAll={() => {}}
+            onSeeAll={onNavigateToFavorites}
             onSalonPress={onNavigateSalonDetails}
           />
         </RisingItem>

@@ -29,6 +29,7 @@ import type { InvoiceData } from '../screens/native/Bookings/types/Invoice';
 import InboxScreen from '../screens/native/Messaging/InboxScreen.native';
 import ChatRoomScreen from '../screens/native/Messaging/ChatRoomScreen.native';
 import ProfileScreen from '../screens/native/Profile/ProfileScreen.native';
+import FavoritesScreen from '../screens/native/Profile/FavoritesScreen.native';
 import ProfileEditScreen from '../screens/native/Profile/ProfileEditScreen.native';
 import PasswordChangeScreen from '../screens/native/Profile/PasswordChangeScreen.native';
 import NotificationPreferencesScreen from '../screens/native/Profile/NotificationPreferencesScreen.native';
@@ -113,9 +114,11 @@ export default function NativeNavigator() {
   const [profileOverlay, setProfileOverlay] = useState<ProfileOverlayId | null>(null);
   const [selectedFaq, setSelectedFaq] = useState<FaqItem | null>(null);
   const [helpLegalScreen, setHelpLegalScreen] = useState<'terms' | 'privacy' | null>(null);
+  const [profileFavoritesVisible, setProfileFavoritesVisible] = useState(false);
   const profileOverlayTx = useSharedValue(SCREEN_WIDTH);
   const faqDetailTx = useSharedValue(SCREEN_WIDTH);
   const helpLegalTx = useSharedValue(SCREEN_WIDTH);
+  const profileFavoritesTx = useSharedValue(SCREEN_WIDTH);
 
   // Messaging overlay
   const [chatConversation, setChatConversation] = useState<Conversation | null>(null);
@@ -138,6 +141,7 @@ export default function NativeNavigator() {
       !!profileOverlay ||
       !!selectedFaq ||
       !!helpLegalScreen ||
+      profileFavoritesVisible ||
       !!chatConversation,
     [
       homeServicesVisible,
@@ -154,6 +158,7 @@ export default function NativeNavigator() {
       profileOverlay,
       selectedFaq,
       helpLegalScreen,
+      profileFavoritesVisible,
       chatConversation,
     ]
   );
@@ -267,6 +272,18 @@ export default function NativeNavigator() {
   }, [profileOverlay, profileOverlayTx]);
   const profileOverlayStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: profileOverlayTx.value }],
+  }));
+
+  // Profile favorites animation
+  useEffect(() => {
+    if (profileFavoritesVisible) {
+      profileFavoritesTx.value = withTiming(0, { duration: TRANSITION_DURATION });
+    } else {
+      profileFavoritesTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION });
+    }
+  }, [profileFavoritesVisible, profileFavoritesTx]);
+  const profileFavoritesStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: profileFavoritesTx.value }],
   }));
 
   // FAQ detail animation (slides in from right when opened from Help)
@@ -429,6 +446,12 @@ export default function NativeNavigator() {
     );
   };
 
+  const closeProfileFavorites = () => {
+    profileFavoritesTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
+      runOnJS(setProfileFavoritesVisible)(false)
+    );
+  };
+
   const openFaqDetail = (faq: FaqItem) => {
     setSelectedFaq(faq);
   };
@@ -537,6 +560,10 @@ export default function NativeNavigator() {
         closeProfileOverlay();
         return true;
       }
+      if (profileFavoritesVisible) {
+        closeProfileFavorites();
+        return true;
+      }
       return false;
     };
 
@@ -553,6 +580,7 @@ export default function NativeNavigator() {
     homeTopRatedVisible,
     invoiceOverlay,
     profileOverlay,
+    profileFavoritesVisible,
     selectedFaq,
     helpLegalScreen,
     bookingSelectedId,
@@ -563,6 +591,7 @@ export default function NativeNavigator() {
     closeHelpLegal,
     closeBookingInvoice,
     closeProfileOverlay,
+    closeProfileFavorites,
     closeHomeBook,
     closeHomeNotifications,
     closeHomeSalon,
@@ -619,6 +648,7 @@ export default function NativeNavigator() {
             onNavigateToPasswordChange={() => openProfileOverlay('password')}
             onNavigateToNotifications={() => openProfileOverlay('notifications')}
             onNavigateToHelp={() => openProfileOverlay('help')}
+            onNavigateToFavorites={() => setProfileFavoritesVisible(true)}
             onNavigateSalonDetails={openHomeSalon}
           />
         </RisingPage>
@@ -968,6 +998,25 @@ export default function NativeNavigator() {
           ]}
         >
           <FAQsScreen faq={selectedFaq} onBack={closeFaqDetail} />
+        </Animated.View>
+      )}
+
+      {/* Overlays - Profile Favorites */}
+      {profileFavoritesVisible && (
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 16,
+            },
+            profileFavoritesStyle,
+          ]}
+        >
+          <FavoritesScreen onBack={closeProfileFavorites} onSalonPress={openHomeSalon} />
         </Animated.View>
       )}
 
