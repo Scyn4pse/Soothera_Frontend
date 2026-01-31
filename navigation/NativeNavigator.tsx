@@ -23,7 +23,9 @@ import BookingsScreen from '../screens/native/Bookings/BookingsScreen.native';
 import BookingDetailsScreen from '../screens/native/Bookings/BookingDetailsScreen.native';
 import RatingSpaScreen from '../screens/native/Bookings/RatingSpaScreen.native';
 import RatingTherapistScreen from '../screens/native/Bookings/RatingTherapistScreen.native';
+import InvoiceScreen from '../screens/native/Bookings/components/InvoiceScreen.native';
 import { getBookingDetails } from '../screens/native/Bookings/configs/mockBookingDetailsData';
+import type { InvoiceData } from '../screens/native/Bookings/types/Invoice';
 import InboxScreen from '../screens/native/Messaging/InboxScreen.native';
 import ChatRoomScreen from '../screens/native/Messaging/ChatRoomScreen.native';
 import ProfileScreen from '../screens/native/Profile/ProfileScreen.native';
@@ -75,9 +77,16 @@ export default function NativeNavigator() {
   const [bookingRatingSpaId, setBookingRatingSpaId] = useState<string | null>(null);
   const [bookingRatingTherapistId, setBookingRatingTherapistId] = useState<string | null>(null);
   const [bookingRatingFromReview, setBookingRatingFromReview] = useState(false);
+  const [invoiceOverlay, setInvoiceOverlay] = useState<{
+    data: InvoiceData;
+    isVAT: boolean;
+    vatRate: number;
+    discounts: number;
+  } | null>(null);
   const bookingsDetailsTx = useSharedValue(SCREEN_WIDTH);
   const bookingsRatingSpaTx = useSharedValue(SCREEN_WIDTH);
   const bookingsRatingTherapistTx = useSharedValue(SCREEN_WIDTH);
+  const bookingsInvoiceTx = useSharedValue(SCREEN_WIDTH);
 
   // Messaging overlay
   const [chatConversation, setChatConversation] = useState<Conversation | null>(null);
@@ -96,6 +105,7 @@ export default function NativeNavigator() {
       !!bookingSelectedId ||
       !!bookingRatingSpaId ||
       !!bookingRatingTherapistId ||
+      !!invoiceOverlay ||
       !!chatConversation,
     [
       homeServicesVisible,
@@ -108,6 +118,7 @@ export default function NativeNavigator() {
       bookingSelectedId,
       bookingRatingSpaId,
       bookingRatingTherapistId,
+      invoiceOverlay,
       chatConversation,
     ]
   );
@@ -201,6 +212,15 @@ export default function NativeNavigator() {
   }));
   const bookingsRatingTherapistStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: bookingsRatingTherapistTx.value }],
+  }));
+  useEffect(() => {
+    bookingsInvoiceTx.value = withTiming(
+      invoiceOverlay ? 0 : SCREEN_WIDTH,
+      { duration: TRANSITION_DURATION }
+    );
+  }, [invoiceOverlay, bookingsInvoiceTx]);
+  const bookingsInvoiceStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: bookingsInvoiceTx.value }],
   }));
 
   // Chat animation
@@ -315,6 +335,23 @@ export default function NativeNavigator() {
     );
   };
 
+  const openBookingInvoice = (
+    data: InvoiceData,
+    options?: { isVAT?: boolean; vatRate?: number; discounts?: number }
+  ) => {
+    setInvoiceOverlay({
+      data,
+      isVAT: options?.isVAT ?? false,
+      vatRate: options?.vatRate ?? 0.12,
+      discounts: options?.discounts ?? 0,
+    });
+  };
+  const closeBookingInvoice = () => {
+    bookingsInvoiceTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
+      runOnJS(setInvoiceOverlay)(null)
+    );
+  };
+
   // Messaging handlers
   const openChat = (conversation: Conversation) => setChatConversation(conversation);
   const closeChat = () => {
@@ -382,6 +419,10 @@ export default function NativeNavigator() {
         closeBookingRatingSpa();
         return true;
       }
+      if (invoiceOverlay) {
+        closeBookingInvoice();
+        return true;
+      }
       if (bookingSelectedId) {
         closeBookingDetails();
         return true;
@@ -404,10 +445,12 @@ export default function NativeNavigator() {
     homeSelectedSalonId,
     homeServicesVisible,
     homeTopRatedVisible,
+    invoiceOverlay,
     bookingSelectedId,
     bookingRatingSpaId,
     bookingRatingTherapistId,
     closeChat,
+    closeBookingInvoice,
     closeHomeBook,
     closeHomeNotifications,
     closeHomeSalon,
@@ -648,6 +691,7 @@ export default function NativeNavigator() {
                 onBack={closeBookingDetails}
                 onRateSpa={() => openBookingRatingSpa(bookingSelectedId)}
                 onRateTherapist={() => openBookingRatingTherapist(bookingSelectedId)}
+                onNavigateToInvoice={openBookingInvoice}
                 onRebook={() => {
                   const bookingDetails = getBookingDetails(bookingSelectedId);
                   if (bookingDetails) {
@@ -726,6 +770,30 @@ export default function NativeNavigator() {
               />
             );
           })()}
+        </Animated.View>
+      )}
+
+      {invoiceOverlay && (
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 15,
+            },
+            bookingsInvoiceStyle,
+          ]}
+        >
+          <InvoiceScreen
+            invoiceData={invoiceOverlay.data}
+            onBack={closeBookingInvoice}
+            isVAT={invoiceOverlay.isVAT}
+            vatRate={invoiceOverlay.vatRate}
+            discounts={invoiceOverlay.discounts}
+          />
         </Animated.View>
       )}
 

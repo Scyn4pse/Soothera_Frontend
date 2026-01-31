@@ -12,6 +12,7 @@ import RescheduleModal from './components/RescheduleModal';
 import { useConfirmation } from '@/components/native/ConfirmationModalContext';
 import InvoiceScreen from './components/InvoiceScreen.native';
 import { generateInvoiceFromBooking } from './utils/invoiceDataGenerator';
+import type { InvoiceData } from './types/Invoice';
 
 // Try to load react-native-maps at runtime for mobile. Do not import statically
 // so the web build / TS server won't fail if the native lib isn't installed.
@@ -35,6 +36,7 @@ interface BookingDetailsScreenProps {
   onBack: () => void;
   onRateSpa?: () => void;
   onRateTherapist?: () => void;
+  onNavigateToInvoice?: (invoiceData: InvoiceData, options?: { isVAT?: boolean; vatRate?: number; discounts?: number }) => void;
   onRebook?: () => void;
   onReschedule?: () => void;
   onCancel?: () => void;
@@ -252,6 +254,7 @@ export default function BookingDetailsScreen({
   onBack,
   onRateSpa,
   onRateTherapist,
+  onNavigateToInvoice,
   onRebook,
   onReschedule,
   onCancel,
@@ -602,7 +605,24 @@ export default function BookingDetailsScreen({
               className="w-full flex-row items-center justify-center px-4 py-3 rounded-xl border"
               style={{ borderColor: primaryColor, backgroundColor: 'white' }}
               onPress={() => {
-                setShowInvoice(true);
+                const invoiceData = generateInvoiceFromBooking(bookingDetails, {
+                  isVAT: false,
+                  vatRate: 0.12,
+                  discounts: 0,
+                  customerName: 'Customer Name',
+                  customerAddress: bookingDetails.address,
+                  businessName: 'Soothera',
+                  businessAddress: 'Cebu, Philippines',
+                  businessPhone: '+63 32 123 4567',
+                  businessEmail: 'info@soothera.com',
+                  businessTIN: '123-456-789-000',
+                  notes: 'Thank you for your booking!',
+                });
+                if (onNavigateToInvoice) {
+                  onNavigateToInvoice(invoiceData, { isVAT: false, vatRate: 0.12, discounts: 0 });
+                } else {
+                  setShowInvoice(true);
+                }
               }}
             >
               <Ionicons name="download-outline" size={18} color={primaryColor} />
@@ -682,13 +702,13 @@ export default function BookingDetailsScreen({
         onCancel={handleRescheduleCancel}
       />
 
-      {/* Invoice Screen */}
-      {showInvoice && (() => {
+      {/* Invoice Screen (local overlay when not using navigator stack) */}
+      {showInvoice && !onNavigateToInvoice && (() => {
         const invoiceData = generateInvoiceFromBooking(bookingDetails, {
-          isVAT: false, // Set to true for VAT invoices, false for Non-VAT
-          vatRate: 0.12, // 12% VAT rate (only used if isVAT is true)
-          discounts: 0, // Discount amount
-          customerName: 'Customer Name', // Replace with actual customer data
+          isVAT: false,
+          vatRate: 0.12,
+          discounts: 0,
+          customerName: 'Customer Name',
           customerAddress: bookingDetails.address,
           businessName: 'Soothera',
           businessAddress: 'Cebu, Philippines',
@@ -703,7 +723,7 @@ export default function BookingDetailsScreen({
             <InvoiceScreen
               invoiceData={invoiceData}
               onBack={() => setShowInvoice(false)}
-              isVAT={false} // Set to true for VAT invoices
+              isVAT={false}
               vatRate={0.12}
               discounts={0}
             />
