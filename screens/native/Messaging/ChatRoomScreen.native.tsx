@@ -166,9 +166,13 @@ export default function ChatRoomScreen({ conversation, onBack }: ChatRoomScreenP
 
         {/* Profile Picture */}
         <View className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#2a2a2a] items-center justify-center mr-3 overflow-hidden">
-          {conversationInfo.avatar ? (
+          {conversationInfo.avatar != null ? (
             <Image
-              source={conversationInfo.avatar}
+              source={
+                typeof conversationInfo.avatar === 'string'
+                  ? { uri: conversationInfo.avatar }
+                  : conversationInfo.avatar
+              }
               className="w-10 h-10 rounded-full"
               resizeMode="cover"
             />
@@ -207,9 +211,6 @@ export default function ChatRoomScreen({ conversation, onBack }: ChatRoomScreenP
                   {conversationInfo.rating.toFixed(1)}
                 </Text>
               </View>
-            )}
-            {conversation.isOnline && (
-              <View className="ml-2 w-2 h-2 rounded-full" style={{ backgroundColor: '#10B981' }} />
             )}
           </View>
         </View>
@@ -290,13 +291,13 @@ export default function ChatRoomScreen({ conversation, onBack }: ChatRoomScreenP
         ))}
       </ScrollView>
 
-      {/* Input Area - Positioned on top of keyboard */}
+      {/* Input Area - Positioned on top of keyboard, respects bottom inset when keyboard closed */}
       <View
         className="flex-row items-center px-5 py-2 border-t border-gray-200 dark:border-[#2a2a2a] absolute left-0 right-0"
         style={{
           backgroundColor: colorScheme === 'dark' ? '#151718' : '#fff',
           borderTopColor: colorScheme === 'dark' ? '#2a2a2a' : '#e5e7eb',
-          bottom: keyboardHeight > 0 ? keyboardHeight : 0,
+          bottom: keyboardHeight > 0 ? keyboardHeight : insets.bottom,
         }}
       >
         <View

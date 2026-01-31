@@ -37,6 +37,18 @@ import type { Service } from '../screens/native/Home/types/Home';
 import type { SalonDetails, Therapist } from '../screens/native/Home/types/SalonDetails';
 import type { Conversation } from '../screens/native/Messaging/InboxScreen.native';
 
+/** Support / AI chatbot conversation for Help screen FAB */
+const SUPPORT_CHATBOT_CONVERSATION: Conversation = {
+  id: '5',
+  name: 'Soothera Assistant',
+  lastMessage: 'I can help you find the perfect salon or book an appointment. What would you like to do?',
+  timestamp: '08:40 AM',
+  type: 'chatbot',
+  chatbotId: '1',
+  avatar: undefined,
+  isOnline: true,
+};
+
 type TabId = 'home' | 'bookings' | 'messaging' | 'profile';
 type ProfileOverlayId = 'edit' | 'password' | 'notifications' | 'help';
 
@@ -863,12 +875,15 @@ export default function NativeNavigator() {
             <NotificationPreferencesScreen onBack={closeProfileOverlay} />
           )}
           {profileOverlay === 'help' && (
-            <HelpScreen onBack={closeProfileOverlay} />
+            <HelpScreen
+              onBack={closeProfileOverlay}
+              onOpenChatbot={() => openChat(SUPPORT_CHATBOT_CONVERSATION)}
+            />
           )}
         </Animated.View>
       )}
 
-      {/* Overlays - Messaging */}
+      {/* Overlays - Messaging (above profile so chat opens on top of Help, etc.) */}
       {chatConversation && (
         <Animated.View
           style={[
@@ -878,7 +893,7 @@ export default function NativeNavigator() {
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 15,
+              zIndex: 17,
             },
             chatStyle,
           ]}

@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ChatbotFAB } from '@/components/native/ChatbotFAB';
 
 interface HelpScreenProps {
   onBack: () => void;
+  onOpenChatbot?: () => void;
 }
 
 // Display-only row: question mark icon + text (same padding/divider as NotificationPreferencesScreen)
@@ -104,11 +106,12 @@ const FAQ_QUESTIONS = [
   'Can I request specific areas to be focused on or avoided?',
 ];
 
-export default function HelpScreen({ onBack }: HelpScreenProps) {
+export default function HelpScreen({ onBack, onOpenChatbot }: HelpScreenProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
   const isDark = colorScheme === 'dark';
+  const [popupDismissedForVisit, setPopupDismissedForVisit] = useState(false);
 
   const openTerms = () => Linking.openURL('https://soothera.com/terms').catch(() => {});
   const openPrivacy = () => Linking.openURL('https://soothera.com/privacy').catch(() => {});
@@ -183,6 +186,14 @@ export default function HelpScreen({ onBack }: HelpScreenProps) {
           </Text>
         </View>
       </ScrollView>
+
+      <ChatbotFAB
+        visible
+        floatingAboveTabBar={false}
+        showPopupInitially={!popupDismissedForVisit}
+        onOpenChat={onOpenChatbot}
+        onPopupDismiss={() => setPopupDismissedForVisit(true)}
+      />
     </View>
   );
 }
