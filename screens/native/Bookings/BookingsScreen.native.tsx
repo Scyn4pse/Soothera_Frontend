@@ -64,6 +64,7 @@ interface BookingsScreenProps {
   onNavigateRatingSpa?: (bookingId: string, fromReview?: boolean) => void;
   onNavigateRatingTherapist?: (bookingId: string, fromReview?: boolean) => void;
   onNavigateNotifications?: () => void;
+  onNavigateGetDirections?: (destination: { latitude: number; longitude: number }, destinationName?: string) => void;
   onNavigateRebook?: (booking: Booking) => void;
 }
 
@@ -76,6 +77,7 @@ export default function BookingsScreen({
   onNavigateRatingSpa,
   onNavigateRatingTherapist,
   onNavigateNotifications,
+  onNavigateGetDirections,
   onNavigateRebook,
 }: BookingsScreenProps = {}) {
   const insets = useSafeAreaInsets();
@@ -648,6 +650,7 @@ export default function BookingsScreen({
                 onBack={handleBack}
                 onRateSpa={handleRateSpa}
                 onRateTherapist={handleRateTherapist}
+                onGetDirections={onNavigateGetDirections}
                 onRebook={handleRebook}
                 onReschedule={handleReschedule}
                 onCancel={handleCancel}

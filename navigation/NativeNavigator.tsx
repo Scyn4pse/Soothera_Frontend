@@ -106,7 +106,7 @@ export default function NativeNavigator() {
     vatRate: number;
     discounts: number;
   } | null>(null);
-  const [getDirectionsDestination, setGetDirectionsDestination] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [getDirectionsDestination, setGetDirectionsDestination] = useState<{ latitude: number; longitude: number; name?: string } | null>(null);
   const bookingsDetailsTx = useSharedValue(SCREEN_WIDTH);
   const bookingsRatingSpaTx = useSharedValue(SCREEN_WIDTH);
   const bookingsRatingTherapistTx = useSharedValue(SCREEN_WIDTH);
@@ -453,8 +453,8 @@ export default function NativeNavigator() {
     );
   };
 
-  const openGetDirections = (destination: { latitude: number; longitude: number }) => {
-    setGetDirectionsDestination(destination);
+  const openGetDirections = (destination: { latitude: number; longitude: number }, destinationName?: string) => {
+    setGetDirectionsDestination({ ...destination, name: destinationName });
   };
   const closeGetDirections = () => {
     getDirectionsTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
@@ -871,7 +871,7 @@ export default function NativeNavigator() {
                 onRateSpa={() => openBookingRatingSpa(bookingSelectedId)}
                 onRateTherapist={() => openBookingRatingTherapist(bookingSelectedId)}
                 onNavigateToInvoice={openBookingInvoice}
-                onGetDirections={(destination) => openGetDirections(destination)}
+                onGetDirections={(destination) => openGetDirections(destination, details.spaName)}
                 onRebook={() => {
                   const bookingDetails = getBookingDetails(bookingSelectedId);
                   if (bookingDetails) {
@@ -973,6 +973,28 @@ export default function NativeNavigator() {
             isVAT={invoiceOverlay.isVAT}
             vatRate={invoiceOverlay.vatRate}
             discounts={invoiceOverlay.discounts}
+          />
+        </Animated.View>
+      )}
+
+      {getDirectionsDestination && (
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 15,
+            },
+            getDirectionsStyle,
+          ]}
+        >
+          <GetDirectionsScreen
+            destination={getDirectionsDestination}
+            destinationName={getDirectionsDestination.name}
+            onBack={closeGetDirections}
           />
         </Animated.View>
       )}

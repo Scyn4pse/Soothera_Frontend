@@ -13,9 +13,7 @@ import { useConfirmation } from '@/components/native/ConfirmationModalContext';
 import InvoiceScreen from './components/InvoiceScreen.native';
 import { generateInvoiceFromBooking } from './utils/invoiceDataGenerator';
 import type { InvoiceData } from './types/Invoice';
-
-// Mapbox access token from environment
-const MAPBOX_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN || '';
+import { MAPBOX_TOKEN } from '../../../env';
 
 // Try to load react-native-maps at runtime for mobile. Do not import statically
 // so the web build / TS server won't fail if the native lib isn't installed.
@@ -40,6 +38,7 @@ interface BookingDetailsScreenProps {
   onRateSpa?: () => void;
   onRateTherapist?: () => void;
   onNavigateToInvoice?: (invoiceData: InvoiceData, options?: { isVAT?: boolean; vatRate?: number; discounts?: number }) => void;
+  onGetDirections?: (destination: { latitude: number; longitude: number }, destinationName?: string) => void;
   onRebook?: () => void;
   onReschedule?: () => void;
   onCancel?: () => void;
@@ -255,6 +254,7 @@ export default function BookingDetailsScreen({
   onRateSpa,
   onRateTherapist,
   onNavigateToInvoice,
+  onGetDirections,
   onRebook,
   onReschedule,
   onCancel,
@@ -272,40 +272,12 @@ export default function BookingDetailsScreen({
   const { showConfirmation } = useConfirmation();
 
   // Handle Get Directions
-  const handleGetDirections = async () => {
+  const handleGetDirections = () => {
     const { latitude, longitude } = bookingDetails;
     const validLat = isNaN(latitude) ? 10.643284 : latitude;
     const validLng = isNaN(longitude) ? 124.477158 : longitude;
     
-    let url = '';
-    if (Platform.OS === 'ios') {
-      // Open Apple Maps
-      url = `maps://maps.apple.com/?daddr=${validLat},${validLng}&directionsmode=driving`;
-    } else if (Platform.OS === 'android') {
-      // Open Google Maps
-      url = `google.navigation:q=${validLat},${validLng}`;
-      // Fallback to Google Maps web if app is not installed
-      const canOpen = await Linking.canOpenURL(url);
-      if (!canOpen) {
-        url = `https://www.google.com/maps/dir/?api=1&destination=${validLat},${validLng}`;
-      }
-    } else {
-      // Web fallback
-      url = `https://www.google.com/maps/dir/?api=1&destination=${validLat},${validLng}`;
-    }
-    
-    try {
-      const canOpen = await Linking.canOpenURL(url);
-      if (canOpen) {
-        await Linking.openURL(url);
-      } else {
-        // Fallback to Google Maps web
-        const fallbackUrl = `https://www.google.com/maps/dir/?api=1&destination=${validLat},${validLng}`;
-        await Linking.openURL(fallbackUrl);
-      }
-    } catch (error) {
-      console.error('Error opening maps:', error);
-    }
+    onGetDirections?.({ latitude: validLat, longitude: validLng }, bookingDetails.spaName);
   };
 
   // Parse booking date and time for initial values

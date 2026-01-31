@@ -8,6 +8,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { TransparentHeader } from '@/components/native/TransparentHeader';
 import { SalonDetails } from './types/SalonDetails';
 import { services } from './configs/mockData';
+import { MAPBOX_TOKEN } from '../../../env';
 
 // Try to load react-native-maps at runtime for mobile. Do not import statically
 // so the web build / TS server won't fail if the native lib isn't installed.
@@ -39,9 +40,6 @@ const MapView = ({ latitude, longitude }: { latitude: number; longitude: number 
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
-  // Mapbox access token
-  const mapboxToken = 'pk.eyJ1IjoiYWppd25sIiwiYSI6ImNtMzhsaHFzNTB0dmsyaXE1enV5aXNrbjcifQ.MKG4wR3aMbdde0oisZLH7g';
-  
   // Default coordinates fallback
   const DEFAULT_LAT = 10.643284;
   const DEFAULT_LNG = 124.477158;
@@ -66,7 +64,7 @@ const MapView = ({ latitude, longitude }: { latitude: number; longitude: number 
       };
       
       // Mapbox tile URL template
-      const mapboxTileUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`;
+      const mapboxTileUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`;
       
       return (
         <View 
@@ -148,7 +146,7 @@ const MapView = ({ latitude, longitude }: { latitude: number; longitude: number 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     // Mapbox access token
-    var mapboxToken = '${mapboxToken}';
+    var mapboxToken = '${MAPBOX_TOKEN}';
     
     const map = L.map('map', { zoomControl: false, dragging: false, touchZoom: false, doubleClickZoom: false, scrollWheelZoom: false }).setView([${validLat}, ${validLng}], 14);
     
