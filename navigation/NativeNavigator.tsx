@@ -24,6 +24,7 @@ import BookingDetailsScreen from '../screens/native/Bookings/BookingDetailsScree
 import RatingSpaScreen from '../screens/native/Bookings/RatingSpaScreen.native';
 import RatingTherapistScreen from '../screens/native/Bookings/RatingTherapistScreen.native';
 import InvoiceScreen from '../screens/native/Bookings/components/InvoiceScreen.native';
+import GetDirectionsScreen from '../screens/native/Bookings/GetDirectionsScreen.native';
 import { getBookingDetails } from '../screens/native/Bookings/configs/mockBookingDetailsData';
 import type { InvoiceData } from '../screens/native/Bookings/types/Invoice';
 import InboxScreen from '../screens/native/Messaging/InboxScreen.native';
@@ -105,10 +106,12 @@ export default function NativeNavigator() {
     vatRate: number;
     discounts: number;
   } | null>(null);
+  const [getDirectionsDestination, setGetDirectionsDestination] = useState<{ latitude: number; longitude: number } | null>(null);
   const bookingsDetailsTx = useSharedValue(SCREEN_WIDTH);
   const bookingsRatingSpaTx = useSharedValue(SCREEN_WIDTH);
   const bookingsRatingTherapistTx = useSharedValue(SCREEN_WIDTH);
   const bookingsInvoiceTx = useSharedValue(SCREEN_WIDTH);
+  const getDirectionsTx = useSharedValue(SCREEN_WIDTH);
 
   // Profile overlays
   const [profileOverlay, setProfileOverlay] = useState<ProfileOverlayId | null>(null);
@@ -138,6 +141,7 @@ export default function NativeNavigator() {
       !!bookingRatingSpaId ||
       !!bookingRatingTherapistId ||
       !!invoiceOverlay ||
+      !!getDirectionsDestination ||
       !!profileOverlay ||
       !!selectedFaq ||
       !!helpLegalScreen ||
@@ -155,6 +159,7 @@ export default function NativeNavigator() {
       bookingRatingSpaId,
       bookingRatingTherapistId,
       invoiceOverlay,
+      getDirectionsDestination,
       profileOverlay,
       selectedFaq,
       helpLegalScreen,
@@ -261,6 +266,15 @@ export default function NativeNavigator() {
   }, [invoiceOverlay, bookingsInvoiceTx]);
   const bookingsInvoiceStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: bookingsInvoiceTx.value }],
+  }));
+  useEffect(() => {
+    getDirectionsTx.value = withTiming(
+      getDirectionsDestination ? 0 : SCREEN_WIDTH,
+      { duration: TRANSITION_DURATION }
+    );
+  }, [getDirectionsDestination, getDirectionsTx]);
+  const getDirectionsStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: getDirectionsTx.value }],
   }));
 
   // Profile overlay animation
@@ -439,6 +453,15 @@ export default function NativeNavigator() {
     );
   };
 
+  const openGetDirections = (destination: { latitude: number; longitude: number }) => {
+    setGetDirectionsDestination(destination);
+  };
+  const closeGetDirections = () => {
+    getDirectionsTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
+      runOnJS(setGetDirectionsDestination)(null)
+    );
+  };
+
   const openProfileOverlay = (id: ProfileOverlayId) => setProfileOverlay(id);
   const closeProfileOverlay = () => {
     profileOverlayTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
@@ -540,6 +563,10 @@ export default function NativeNavigator() {
         closeBookingInvoice();
         return true;
       }
+      if (getDirectionsDestination) {
+        closeGetDirections();
+        return true;
+      }
       if (bookingSelectedId) {
         closeBookingDetails();
         return true;
@@ -579,6 +606,7 @@ export default function NativeNavigator() {
     homeServicesVisible,
     homeTopRatedVisible,
     invoiceOverlay,
+    getDirectionsDestination,
     profileOverlay,
     profileFavoritesVisible,
     selectedFaq,
@@ -590,6 +618,7 @@ export default function NativeNavigator() {
     closeFaqDetail,
     closeHelpLegal,
     closeBookingInvoice,
+    closeGetDirections,
     closeProfileOverlay,
     closeProfileFavorites,
     closeHomeBook,
@@ -842,6 +871,7 @@ export default function NativeNavigator() {
                 onRateSpa={() => openBookingRatingSpa(bookingSelectedId)}
                 onRateTherapist={() => openBookingRatingTherapist(bookingSelectedId)}
                 onNavigateToInvoice={openBookingInvoice}
+                onGetDirections={(destination) => openGetDirections(destination)}
                 onRebook={() => {
                   const bookingDetails = getBookingDetails(bookingSelectedId);
                   if (bookingDetails) {
