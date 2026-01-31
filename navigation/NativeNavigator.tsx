@@ -649,6 +649,7 @@ export default function NativeNavigator() {
             onNavigateToNotifications={() => openProfileOverlay('notifications')}
             onNavigateToHelp={() => openProfileOverlay('help')}
             onNavigateToFavorites={() => setProfileFavoritesVisible(true)}
+            onNavigateToTopRated={() => openHomeTopRated()}
             onNavigateSalonDetails={openHomeSalon}
           />
         </RisingPage>

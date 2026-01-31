@@ -41,6 +41,7 @@ interface ProfileScreenProps {
   onNavigateToNotifications?: () => void;
   onNavigateToHelp?: () => void;
   onNavigateToFavorites?: () => void;
+  onNavigateToTopRated?: () => void;
   onNavigateSalonDetails?: (salonId: string) => void;
 }
 
@@ -51,6 +52,7 @@ export default function ProfileScreen({
   onNavigateToNotifications,
   onNavigateToHelp,
   onNavigateToFavorites,
+  onNavigateToTopRated,
   onNavigateSalonDetails,
 }: ProfileScreenProps = {}) {
   const colorScheme = useColorScheme();
@@ -156,7 +158,7 @@ export default function ProfileScreen({
             title="You May Also Like"
             salons={topRatedSalons.slice(3, 7)}
             showSeeAllInHeader
-            onSeeAll={() => {}}
+            onSeeAll={onNavigateToTopRated}
             onSalonPress={onNavigateSalonDetails}
           />
         </RisingItem>
