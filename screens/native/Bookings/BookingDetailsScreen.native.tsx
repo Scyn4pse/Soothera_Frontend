@@ -10,6 +10,8 @@ import { BookingDetails } from './types/BookingDetails';
 import { BOOKING_STATUS } from './types/Booking';
 import RescheduleModal from './components/RescheduleModal';
 import { useConfirmation } from '@/components/native/ConfirmationModalContext';
+import InvoiceScreen from './components/InvoiceScreen.native';
+import { generateInvoiceFromBooking } from './utils/invoiceDataGenerator';
 
 // Try to load react-native-maps at runtime for mobile. Do not import statically
 // so the web build / TS server won't fail if the native lib isn't installed.
@@ -262,6 +264,7 @@ export default function BookingDetailsScreen({
   const isCancelled = bookingDetails.status === BOOKING_STATUS.CANCELLED;
   const insets = useSafeAreaInsets();
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const { showConfirmation } = useConfirmation();
 
@@ -599,8 +602,7 @@ export default function BookingDetailsScreen({
               className="w-full flex-row items-center justify-center px-4 py-3 rounded-xl border"
               style={{ borderColor: primaryColor, backgroundColor: 'white' }}
               onPress={() => {
-                // TODO: Implement download invoice functionality
-                console.log('Download invoice:', bookingDetails.bookingId);
+                setShowInvoice(true);
               }}
             >
               <Ionicons name="download-outline" size={18} color={primaryColor} />
@@ -679,6 +681,35 @@ export default function BookingDetailsScreen({
         onConfirm={handleRescheduleConfirm}
         onCancel={handleRescheduleCancel}
       />
+
+      {/* Invoice Screen */}
+      {showInvoice && (() => {
+        const invoiceData = generateInvoiceFromBooking(bookingDetails, {
+          isVAT: false, // Set to true for VAT invoices, false for Non-VAT
+          vatRate: 0.12, // 12% VAT rate (only used if isVAT is true)
+          discounts: 0, // Discount amount
+          customerName: 'Customer Name', // Replace with actual customer data
+          customerAddress: bookingDetails.address,
+          businessName: 'Soothera',
+          businessAddress: 'Cebu, Philippines',
+          businessPhone: '+63 32 123 4567',
+          businessEmail: 'info@soothera.com',
+          businessTIN: '123-456-789-000',
+          notes: 'Thank you for your booking!',
+        });
+
+        return (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10 }}>
+            <InvoiceScreen
+              invoiceData={invoiceData}
+              onBack={() => setShowInvoice(false)}
+              isVAT={false} // Set to true for VAT invoices
+              vatRate={0.12}
+              discounts={0}
+            />
+          </View>
+        );
+      })()}
     </View>
   );
 }
