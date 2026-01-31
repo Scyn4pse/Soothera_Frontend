@@ -3,9 +3,11 @@ import { View, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, primaryColor } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { RisingItem } from '@/components/native/RisingItem';
+import { TopRatedSalons } from '../Home/components/Home/TopRatedSalons';
+import { topRatedSalons } from '../Home/configs/mockData';
 
 interface SettingItemProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -38,6 +40,7 @@ interface ProfileScreenProps {
   onNavigateToPasswordChange?: () => void;
   onNavigateToNotifications?: () => void;
   onNavigateToHelp?: () => void;
+  onNavigateSalonDetails?: (salonId: string) => void;
 }
 
 export default function ProfileScreen({
@@ -46,35 +49,22 @@ export default function ProfileScreen({
   onNavigateToPasswordChange,
   onNavigateToNotifications,
   onNavigateToHelp,
+  onNavigateSalonDetails,
 }: ProfileScreenProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
   const isVisible = isActive ?? true;
   const [imageError, setImageError] = useState(false);
-  const maxAnimatedFavorites = 6;
-  const maxAnimatedRecommended = 6;
-  const perItemDelay = 120;
-  
+
   // User data
   const userName = 'User Profile';
   const userEmail = 'profile@soothera.com';
   const profileImage = require('../../../assets/pfp.png');
 
-  // Mock data for recommended salons
-  const recommendedSalons = [
-    { id: '1', name: 'Salon Elite', rating: 4.8, location: 'Talamban, Cebu', image: require('../../../assets/salon.jpg') },
-    { id: '2', name: 'Beauty Haven', rating: 4.9, location: 'Banilad, Cebu', image: require('../../../assets/salon.jpg') },
-    { id: '3', name: 'Style Studio', rating: 4.7, location: 'Mandaue City, Cebu', image: require('../../../assets/salon.jpg') },
-    { id: '4', name: 'Glamour House', rating: 4.8, location: 'Lapu-Lapu City, Cebu', image: require('../../../assets/salon.jpg') },
-  ];
-
-  // Mock data for favorite salons
-  const favoriteSalons = [
-    { id: '1', name: 'Luxury Spa', rating: 4.9, location: 'Cebu City, Cebu', image: require('../../../assets/salon.jpg') },
-    { id: '2', name: 'Relaxation Center', rating: 4.8, location: 'Mactan, Cebu', image: require('../../../assets/salon.jpg') },
-    { id: '3', name: 'Wellness Studio', rating: 4.7, location: 'IT Park, Cebu', image: require('../../../assets/salon.jpg') },
-  ];
+  // Source of truth: mockData. Favorites = first 3, You May Also Like = next 4.
+  const favoriteSalons = topRatedSalons.slice(0, 3);
+  const recommendedSalons = topRatedSalons.slice(3, 7);
 
   return (
     <View className="flex-1 bg-white dark:bg-[#151718]">
@@ -149,128 +139,24 @@ export default function ProfileScreen({
 
         {/* Your Favorites Section */}
         <RisingItem delay={200} visible={isVisible}>
-          <View className="mb-6">
-            <View className="flex-row items-center justify-between px-5 mb-4">
-              <Text className="text-xl font-bold" style={{ color: colors.text }}>
-                Your Favorites
-              </Text>
-              <TouchableOpacity>
-                <Text className="text-base font-medium" style={{ color: primaryColor }}>
-                  See All
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 20 }}
-            >
-              {favoriteSalons.map((salon, index) => {
-                const delay = 240 + Math.min(index, maxAnimatedFavorites) * perItemDelay;
-                const shouldAnimate = isVisible && index < maxAnimatedFavorites;
-                const card = (
-                  <View className="w-56">
-                    <View className="relative rounded-2xl overflow-hidden mb-2">
-                      <Image
-                        source={salon.image}
-                        className="w-full h-40"
-                        resizeMode="cover"
-                      />
-                      <View className="absolute bottom-2 right-2 flex-row items-center bg-black/60 px-2 py-1 rounded-full">
-                        <Ionicons name="star" size={14} color="#FFD700" />
-                        <Text className="text-white text-sm font-semibold ml-1">{salon.rating}</Text>
-                      </View>
-                    </View>
-                    <View>
-                      <Text className="text-base font-semibold mb-1" style={{ color: colors.text }}>
-                        {salon.name}
-                      </Text>
-                      <View className="flex-row items-center">
-                        <Ionicons name="location" size={14} color={colors.icon} />
-                        <Text className="text-sm ml-1" style={{ color: colors.icon }}>
-                          {salon.location}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                );
-
-                return shouldAnimate ? (
-                  <RisingItem key={salon.id} delay={delay} visible={isVisible} style={{ width: 224, marginRight: 16 }}>
-                    {card}
-                  </RisingItem>
-                ) : (
-                  <View key={salon.id} style={{ width: 224, marginRight: 16 }}>
-                    {card}
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
+          <TopRatedSalons
+            title="Your Favorites"
+            salons={topRatedSalons.slice(0, 3)}
+            showSeeAllInHeader
+            onSeeAll={() => {}}
+            onSalonPress={onNavigateSalonDetails}
+          />
         </RisingItem>
 
         {/* You May Also Like Section */}
         <RisingItem delay={260} visible={isVisible}>
-          <View className="mb-6 pb-2">
-            <View className="flex-row items-center justify-between px-5 mb-4">
-              <Text className="text-xl font-bold" style={{ color: colors.text }}>
-                You May Also Like
-              </Text>
-              <TouchableOpacity>
-                <Text className="text-base font-medium" style={{ color: primaryColor }}>
-                  See All
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 20 }}
-            >
-              {recommendedSalons.map((salon, index) => {
-                const delay = 300 + Math.min(index, maxAnimatedRecommended) * perItemDelay;
-                const shouldAnimate = isVisible && index < maxAnimatedRecommended;
-                const card = (
-                  <View className="w-56">
-                    <View className="relative rounded-2xl overflow-hidden mb-2">
-                      <Image
-                        source={salon.image}
-                        className="w-full h-40"
-                        resizeMode="cover"
-                      />
-                      <View className="absolute bottom-2 right-2 flex-row items-center bg-black/60 px-2 py-1 rounded-full">
-                        <Ionicons name="star" size={14} color="#FFD700" />
-                        <Text className="text-white text-sm font-semibold ml-1">{salon.rating}</Text>
-                      </View>
-                    </View>
-                    <View>
-                      <Text className="text-base font-semibold mb-1" style={{ color: colors.text }}>
-                        {salon.name}
-                      </Text>
-                      <View className="flex-row items-center">
-                        <Ionicons name="location" size={14} color={colors.icon} />
-                        <Text className="text-sm ml-1" style={{ color: colors.icon }}>
-                          {salon.location}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                );
-
-                return shouldAnimate ? (
-                  <RisingItem key={salon.id} delay={delay} visible={isVisible} style={{ width: 224, marginRight: 16 }}>
-                    {card}
-                  </RisingItem>
-                ) : (
-                  <View key={salon.id} style={{ width: 224, marginRight: 16 }}>
-                    {card}
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
+          <TopRatedSalons
+            title="You May Also Like"
+            salons={topRatedSalons.slice(3, 7)}
+            showSeeAllInHeader
+            onSeeAll={() => {}}
+            onSalonPress={onNavigateSalonDetails}
+          />
         </RisingItem>
 
       </ScrollView>

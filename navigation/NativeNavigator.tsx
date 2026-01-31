@@ -554,6 +554,7 @@ export default function NativeNavigator() {
             onNavigateToPasswordChange={() => openProfileOverlay('password')}
             onNavigateToNotifications={() => openProfileOverlay('notifications')}
             onNavigateToHelp={() => openProfileOverlay('help')}
+            onNavigateSalonDetails={openHomeSalon}
           />
         </RisingPage>
       </View>
@@ -791,7 +792,7 @@ export default function NativeNavigator() {
               <RatingSpaScreen
                 bookingDetails={details}
                 onBack={closeBookingRatingSpa}
-                onSubmit={() => closeBookingRatingSpa()}
+                onSubmit={async () => { /* API submission handled by screen; navigation on modal OK via onBack */ }}
               />
             );
           })()}
@@ -819,7 +820,7 @@ export default function NativeNavigator() {
               <RatingTherapistScreen
                 bookingDetails={details}
                 onBack={closeBookingRatingTherapist}
-                onSubmit={() => closeBookingRatingTherapist()}
+                onSubmit={async () => { /* API submission handled by screen; navigation on modal OK via onBack */ }}
               />
             );
           })()}

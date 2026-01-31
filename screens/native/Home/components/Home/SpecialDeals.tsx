@@ -4,12 +4,14 @@ import { Text } from '@/components/Text';
 import { primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
+import { SuccessModal } from '@/components/native/SuccessModal';
 import { specialDeals } from '../../configs/mockData';
 
 export function SpecialDeals() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [currentDealIndex, setCurrentDealIndex] = useState(0);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   return (
     <View className="mb-6">
@@ -69,6 +71,7 @@ export function SpecialDeals() {
                 <TouchableOpacity
                   className="bg-white/20 px-6 py-2 rounded-full"
                   style={{ backgroundColor: primaryColor }}
+                  onPress={() => setSuccessModalVisible(true)}
                 >
                   <Text className="text-white font-semibold">Claim</Text>
                 </TouchableOpacity>
@@ -88,6 +91,13 @@ export function SpecialDeals() {
           />
         ))}
       </View>
+
+      <SuccessModal
+        visible={successModalVisible}
+        title="Deal Claimed!"
+        message="Your special discount has been applied. You can use it at any participating salon."
+        onClose={() => setSuccessModalVisible(false)}
+      />
     </View>
   );
 }

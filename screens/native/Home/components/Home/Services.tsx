@@ -74,10 +74,15 @@ export function Services({ onSeeAll, onServicePress }: ServicesProps = {}) {
 
   return (
     <View className="mb-6">
-      <View className="flex-row items-center px-5 mb-4">
+      <View className="flex-row items-center justify-between px-5 mb-4">
         <Text className="text-xl font-bold" style={{ color: colors.text }}>
           Massage Services
         </Text>
+        <TouchableOpacity onPress={handleArrowPress}>
+          <Text className="text-base font-medium" style={{ color: primaryColor }}>
+            See All
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View className="relative">

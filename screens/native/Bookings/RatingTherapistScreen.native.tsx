@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { TransparentHeader } from '@/components/native/TransparentHeader';
+import { SuccessModal } from '@/components/native/SuccessModal';
 import { BookingDetails } from './types/BookingDetails';
 
 interface RatingTherapistScreenProps {
@@ -64,6 +65,7 @@ export default function RatingTherapistScreen({
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const textInputRef = useRef<TextInput>(null);
@@ -118,8 +120,8 @@ export default function RatingTherapistScreen({
     try {
       // TODO: Implement API call to submit rating
       await onSubmit?.(rating, review);
-      // After successful submission, go back
-      onBack();
+      // After successful submission, show success modal
+      setShowSuccessModal(true);
     } catch (error) {
       console.error('Error submitting rating:', error);
       // TODO: Show error message
@@ -275,6 +277,21 @@ export default function RatingTherapistScreen({
           </Text>
         </TouchableOpacity>
       </View>
+
+      <SuccessModal
+        visible={showSuccessModal}
+        title="Rating Submitted!"
+        message="Thank you for your feedback. Your rating has been successfully submitted."
+        onClose={() => {
+          setShowSuccessModal(false);
+          onBack();
+        }}
+        actionLabel="OK"
+        onAction={() => {
+          setShowSuccessModal(false);
+          onBack();
+        }}
+      />
     </View>
   );
 }

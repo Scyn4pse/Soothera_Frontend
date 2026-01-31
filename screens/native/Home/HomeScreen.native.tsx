@@ -349,7 +349,8 @@ export default function HomeScreen({
 
         {/* Top Rated Salons Section */}
         <RisingItem delay={520}>
-          <TopRatedSalons 
+          <TopRatedSalons
+            showSeeAllInHeader
             onSeeAll={() => {
               if (useNavigatorOverlays) {
                 onNavigateTopRated?.({ autoOpenFilter: false });

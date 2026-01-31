@@ -6,13 +6,23 @@ import { primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
 import { topRatedSalons } from '../../configs/mockData';
+import type { TopRatedSalon } from '../../types/Home';
 
 interface TopRatedSalonsProps {
+  title?: string;
+  salons?: TopRatedSalon[];
+  showSeeAllInHeader?: boolean;
   onSeeAll?: () => void;
   onSalonPress?: (salonId: string) => void;
 }
 
-export function TopRatedSalons({ onSeeAll, onSalonPress }: TopRatedSalonsProps = {}) {
+export function TopRatedSalons({
+  title = 'Top Rated Salons',
+  salons = topRatedSalons.slice(0, 4),
+  showSeeAllInHeader = false,
+  onSeeAll,
+  onSalonPress,
+}: TopRatedSalonsProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [isAtEnd, setIsAtEnd] = useState(false);
@@ -73,10 +83,17 @@ export function TopRatedSalons({ onSeeAll, onSalonPress }: TopRatedSalonsProps =
 
   return (
     <View className="mb-6 pb-6">
-      <View className="flex-row items-center px-5 mb-4">
+      <View className={`flex-row items-center px-5 mb-4 ${showSeeAllInHeader ? 'justify-between' : ''}`}>
         <Text className="text-xl font-bold" style={{ color: colors.text }}>
-          Top Rated Salons
+          {title}
         </Text>
+        {showSeeAllInHeader && (
+          <TouchableOpacity onPress={handleArrowPress}>
+            <Text className="text-base font-medium" style={{ color: primaryColor }}>
+              See All
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View className="relative">
@@ -88,7 +105,7 @@ export function TopRatedSalons({ onSeeAll, onSalonPress }: TopRatedSalonsProps =
           onScroll={handleScroll}
           scrollEventThrottle={16}
         >
-          {topRatedSalons.slice(0, 4).map((salon) => (
+          {salons.map((salon) => (
             <TouchableOpacity 
               key={salon.id} 
               className="w-56 mr-4"

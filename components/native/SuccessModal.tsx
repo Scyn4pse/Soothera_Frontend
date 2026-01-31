@@ -32,6 +32,22 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
 
   // Pulse animation for the status icon
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  // Zoom + popup: scale from 0.3 to 1 with slight overshoot
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      scaleAnim.setValue(0.3);
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 200,
+        friction: 6,
+      }).start();
+    } else {
+      scaleAnim.setValue(0);
+    }
+  }, [visible, scaleAnim]);
 
   useEffect(() => {
     if (visible) {
@@ -70,7 +86,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
       <TouchableWithoutFeedback onPress={onClose}>
         <View className="flex-1 bg-black/50 justify-center items-center p-5">
           <TouchableWithoutFeedback>
-            <View
+            <Animated.View
               className={`rounded-2xl p-6 w-full max-w-sm ${
                 isDark ? 'bg-[#1f1f1f]' : 'bg-white'
               }`}
@@ -80,6 +96,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
                 shadowOpacity: 0.3,
                 shadowRadius: 8,
                 elevation: 8,
+                transform: [{ scale: scaleAnim }],
               }}
             >
               {/* Status Icon */}
@@ -125,7 +142,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
                   {buttonLabel}
                 </Text>
               </TouchableOpacity>
-            </View>
+            </Animated.View>
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
