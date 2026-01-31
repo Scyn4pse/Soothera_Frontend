@@ -1,33 +1,42 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, primaryColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ChatbotFAB } from '@/components/native/ChatbotFAB';
+import { FAQ_ITEMS } from './configs/faqData';
+import type { FaqItem } from './configs/faqData';
 
 interface HelpScreenProps {
   onBack: () => void;
   onOpenChatbot?: () => void;
+  onFaqPress?: (faq: FaqItem) => void;
+  onTermsPress?: () => void;
+  onPrivacyPress?: () => void;
 }
 
-// Display-only row: question mark icon + text (same padding/divider as NotificationPreferencesScreen)
+// Pressable FAQ row: question mark icon + text + chevron (same format as HelpLinkRow)
 function FAQRow({
-  question,
+  faq,
+  onPress,
   colors,
   isDark,
   isLast,
 }: {
-  question: string;
+  faq: FaqItem;
+  onPress: () => void;
   colors: typeof Colors.light;
   isDark: boolean;
   isLast?: boolean;
 }) {
   return (
-    <View
+    <TouchableOpacity
+      onPress={onPress}
       className="flex-row items-center py-4"
       style={!isLast ? { borderBottomWidth: 1, borderBottomColor: isDark ? '#2a2a2a' : '#E5E7EB' } : undefined}
+      activeOpacity={0.7}
     >
       <View
         className="w-8 h-8 rounded-full items-center justify-center mr-3"
@@ -38,9 +47,10 @@ function FAQRow({
         </Text>
       </View>
       <Text className="flex-1 text-base font-medium" style={{ color: colors.text }}>
-        {question}
+        {faq.question}
       </Text>
-    </View>
+      <Ionicons name="chevron-forward" size={20} color={colors.icon} />
+    </TouchableOpacity>
   );
 }
 
@@ -95,26 +105,12 @@ function SectionTitle({
   );
 }
 
-const FAQ_QUESTIONS = [
-  'What are your offered services?',
-  'Can you provide the list of your services with prices?',
-  'Do you offer a home service?',
-  'Can I request a massage therapist?',
-  'How do I book an appointment?',
-  'What payment methods do you accept?',
-  'What is your cancellation and refund policy?',
-  'Can I request specific areas to be focused on or avoided?',
-];
-
-export default function HelpScreen({ onBack, onOpenChatbot }: HelpScreenProps) {
+export default function HelpScreen({ onBack, onOpenChatbot, onFaqPress, onTermsPress, onPrivacyPress }: HelpScreenProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
   const isDark = colorScheme === 'dark';
   const [popupDismissedForVisit, setPopupDismissedForVisit] = useState(false);
-
-  const openTerms = () => Linking.openURL('https://soothera.com/terms').catch(() => {});
-  const openPrivacy = () => Linking.openURL('https://soothera.com/privacy').catch(() => {});
 
   return (
     <View className="flex-1 bg-white dark:bg-[#151718]">
@@ -150,13 +146,14 @@ export default function HelpScreen({ onBack, onOpenChatbot }: HelpScreenProps) {
         }}
       >
         <SectionTitle title="FAQs" colors={colors} isFirst />
-        {FAQ_QUESTIONS.map((question, index) => (
+        {FAQ_ITEMS.map((faq, index) => (
           <FAQRow
-            key={question}
-            question={question}
+            key={faq.question}
+            faq={faq}
+            onPress={() => onFaqPress?.(faq)}
             colors={colors}
             isDark={isDark}
-            isLast={index === FAQ_QUESTIONS.length - 1}
+            isLast={index === FAQ_ITEMS.length - 1}
           />
         ))}
 
@@ -164,14 +161,14 @@ export default function HelpScreen({ onBack, onOpenChatbot }: HelpScreenProps) {
         <HelpLinkRow
           icon="document-text-outline"
           label="Terms of Service"
-          onPress={openTerms}
+          onPress={() => onTermsPress?.()}
           colors={colors}
           isDark={isDark}
         />
         <HelpLinkRow
           icon="shield-checkmark-outline"
           label="Privacy Policy"
-          onPress={openPrivacy}
+          onPress={() => onPrivacyPress?.()}
           colors={colors}
           isDark={isDark}
           isLast

@@ -33,6 +33,10 @@ import ProfileEditScreen from '../screens/native/Profile/ProfileEditScreen.nativ
 import PasswordChangeScreen from '../screens/native/Profile/PasswordChangeScreen.native';
 import NotificationPreferencesScreen from '../screens/native/Profile/NotificationPreferencesScreen.native';
 import HelpScreen from '../screens/native/Profile/HelpScreen.native';
+import FAQsScreen from '../screens/native/Profile/FAQsScreen.native';
+import TermsOfServiceScreen from '../screens/native/Profile/TermsOfServiceScreen.native';
+import PrivacyPolicyScreen from '../screens/native/Profile/PrivacyPolicyScreen.native';
+import type { FaqItem } from '../screens/native/Profile/configs/faqData';
 import type { Service } from '../screens/native/Home/types/Home';
 import type { SalonDetails, Therapist } from '../screens/native/Home/types/SalonDetails';
 import type { Conversation } from '../screens/native/Messaging/InboxScreen.native';
@@ -107,7 +111,11 @@ export default function NativeNavigator() {
 
   // Profile overlays
   const [profileOverlay, setProfileOverlay] = useState<ProfileOverlayId | null>(null);
+  const [selectedFaq, setSelectedFaq] = useState<FaqItem | null>(null);
+  const [helpLegalScreen, setHelpLegalScreen] = useState<'terms' | 'privacy' | null>(null);
   const profileOverlayTx = useSharedValue(SCREEN_WIDTH);
+  const faqDetailTx = useSharedValue(SCREEN_WIDTH);
+  const helpLegalTx = useSharedValue(SCREEN_WIDTH);
 
   // Messaging overlay
   const [chatConversation, setChatConversation] = useState<Conversation | null>(null);
@@ -128,6 +136,8 @@ export default function NativeNavigator() {
       !!bookingRatingTherapistId ||
       !!invoiceOverlay ||
       !!profileOverlay ||
+      !!selectedFaq ||
+      !!helpLegalScreen ||
       !!chatConversation,
     [
       homeServicesVisible,
@@ -142,6 +152,8 @@ export default function NativeNavigator() {
       bookingRatingTherapistId,
       invoiceOverlay,
       profileOverlay,
+      selectedFaq,
+      helpLegalScreen,
       chatConversation,
     ]
   );
@@ -255,6 +267,30 @@ export default function NativeNavigator() {
   }, [profileOverlay, profileOverlayTx]);
   const profileOverlayStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: profileOverlayTx.value }],
+  }));
+
+  // FAQ detail animation (slides in from right when opened from Help)
+  useEffect(() => {
+    if (selectedFaq) {
+      faqDetailTx.value = withTiming(0, { duration: TRANSITION_DURATION });
+    } else {
+      faqDetailTx.value = SCREEN_WIDTH;
+    }
+  }, [selectedFaq, faqDetailTx]);
+  const faqDetailStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: faqDetailTx.value }],
+  }));
+
+  // Help legal screen animation (Terms / Privacy slides in from right when opened from Help)
+  useEffect(() => {
+    if (helpLegalScreen) {
+      helpLegalTx.value = withTiming(0, { duration: TRANSITION_DURATION });
+    } else {
+      helpLegalTx.value = SCREEN_WIDTH;
+    }
+  }, [helpLegalScreen, helpLegalTx]);
+  const helpLegalStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: helpLegalTx.value }],
   }));
 
   // Chat animation
@@ -393,6 +429,23 @@ export default function NativeNavigator() {
     );
   };
 
+  const openFaqDetail = (faq: FaqItem) => {
+    setSelectedFaq(faq);
+  };
+  const closeFaqDetail = () => {
+    faqDetailTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
+      runOnJS(setSelectedFaq)(null)
+    );
+  };
+
+  const openTermsOfService = () => setHelpLegalScreen('terms');
+  const openPrivacyPolicy = () => setHelpLegalScreen('privacy');
+  const closeHelpLegal = () => {
+    helpLegalTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
+      runOnJS(setHelpLegalScreen)(null)
+    );
+  };
+
   // Messaging handlers
   const openChat = (conversation: Conversation) => setChatConversation(conversation);
   const closeChat = () => {
@@ -468,6 +521,14 @@ export default function NativeNavigator() {
         closeBookingDetails();
         return true;
       }
+      if (selectedFaq) {
+        closeFaqDetail();
+        return true;
+      }
+      if (helpLegalScreen) {
+        closeHelpLegal();
+        return true;
+      }
       if (profileOverlay) {
         closeProfileOverlay();
         return true;
@@ -492,10 +553,14 @@ export default function NativeNavigator() {
     homeTopRatedVisible,
     invoiceOverlay,
     profileOverlay,
+    selectedFaq,
+    helpLegalScreen,
     bookingSelectedId,
     bookingRatingSpaId,
     bookingRatingTherapistId,
     closeChat,
+    closeFaqDetail,
+    closeHelpLegal,
     closeBookingInvoice,
     closeProfileOverlay,
     closeHomeBook,
@@ -879,7 +944,53 @@ export default function NativeNavigator() {
             <HelpScreen
               onBack={closeProfileOverlay}
               onOpenChatbot={() => openChat(SUPPORT_CHATBOT_CONVERSATION)}
+              onFaqPress={openFaqDetail}
+              onTermsPress={openTermsOfService}
+              onPrivacyPress={openPrivacyPolicy}
             />
+          )}
+        </Animated.View>
+      )}
+
+      {/* Overlays - FAQ Detail (slides in from right on top of Help) */}
+      {profileOverlay === 'help' && selectedFaq && (
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 16,
+            },
+            faqDetailStyle,
+          ]}
+        >
+          <FAQsScreen faq={selectedFaq} onBack={closeFaqDetail} />
+        </Animated.View>
+      )}
+
+      {/* Overlays - Help Legal (Terms / Privacy slides in from right on top of Help) */}
+      {profileOverlay === 'help' && helpLegalScreen && (
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 16,
+            },
+            helpLegalStyle,
+          ]}
+        >
+          {helpLegalScreen === 'terms' && (
+            <TermsOfServiceScreen onBack={closeHelpLegal} />
+          )}
+          {helpLegalScreen === 'privacy' && (
+            <PrivacyPolicyScreen onBack={closeHelpLegal} />
           )}
         </Animated.View>
       )}
