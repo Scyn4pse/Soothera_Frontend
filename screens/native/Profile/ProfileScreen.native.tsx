@@ -34,9 +34,19 @@ function SettingItem({ icon, label, onPress, colors, textColor, iconColor }: Set
 
 interface ProfileScreenProps {
   isActive?: boolean;
+  onNavigateToProfileEdit?: () => void;
+  onNavigateToPasswordChange?: () => void;
+  onNavigateToNotifications?: () => void;
+  onNavigateToHelp?: () => void;
 }
 
-export default function ProfileScreen({ isActive }: ProfileScreenProps = {}) {
+export default function ProfileScreen({
+  isActive,
+  onNavigateToProfileEdit,
+  onNavigateToPasswordChange,
+  onNavigateToNotifications,
+  onNavigateToHelp,
+}: ProfileScreenProps = {}) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
@@ -112,9 +122,9 @@ export default function ProfileScreen({ isActive }: ProfileScreenProps = {}) {
                 </Text>
               </View>
               <View className="border-t border-gray-200 dark:border-[#2a2a2a]">
-                <SettingItem icon="person-outline" label="Profile" colors={colors} />
-                <SettingItem icon="lock-closed-outline" label="Password" colors={colors} />
-                <SettingItem icon="notifications-outline" label="Notifications" colors={colors} />
+                <SettingItem icon="person-outline" label="Profile" colors={colors} onPress={onNavigateToProfileEdit} />
+                <SettingItem icon="lock-closed-outline" label="Password" colors={colors} onPress={onNavigateToPasswordChange} />
+                <SettingItem icon="notifications-outline" label="Notifications" colors={colors} onPress={onNavigateToNotifications} />
               </View>
             </View>
           </RisingItem>
@@ -130,7 +140,7 @@ export default function ProfileScreen({ isActive }: ProfileScreenProps = {}) {
                 </Text>
               </View>
               <View className="border-t border-gray-200 dark:border-[#2a2a2a]">
-                <SettingItem icon="help-circle-outline" label="Help" colors={colors} />
+                <SettingItem icon="help-circle-outline" label="Help" colors={colors} onPress={onNavigateToHelp} />
                 <SettingItem icon="log-out-outline" label="Logout" colors={colors} textColor="#EF4444" iconColor="#EF4444" />
               </View>
             </View>

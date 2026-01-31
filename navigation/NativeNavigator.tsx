@@ -29,11 +29,16 @@ import type { InvoiceData } from '../screens/native/Bookings/types/Invoice';
 import InboxScreen from '../screens/native/Messaging/InboxScreen.native';
 import ChatRoomScreen from '../screens/native/Messaging/ChatRoomScreen.native';
 import ProfileScreen from '../screens/native/Profile/ProfileScreen.native';
+import ProfileEditScreen from '../screens/native/Profile/ProfileEditScreen.native';
+import PasswordChangeScreen from '../screens/native/Profile/PasswordChangeScreen.native';
+import NotificationPreferencesScreen from '../screens/native/Profile/NotificationPreferencesScreen.native';
+import HelpScreen from '../screens/native/Profile/HelpScreen.native';
 import type { Service } from '../screens/native/Home/types/Home';
 import type { SalonDetails, Therapist } from '../screens/native/Home/types/SalonDetails';
 import type { Conversation } from '../screens/native/Messaging/InboxScreen.native';
 
 type TabId = 'home' | 'bookings' | 'messaging' | 'profile';
+type ProfileOverlayId = 'edit' | 'password' | 'notifications' | 'help';
 
 interface BookingData {
   service: Service | null;
@@ -88,6 +93,10 @@ export default function NativeNavigator() {
   const bookingsRatingTherapistTx = useSharedValue(SCREEN_WIDTH);
   const bookingsInvoiceTx = useSharedValue(SCREEN_WIDTH);
 
+  // Profile overlays
+  const [profileOverlay, setProfileOverlay] = useState<ProfileOverlayId | null>(null);
+  const profileOverlayTx = useSharedValue(SCREEN_WIDTH);
+
   // Messaging overlay
   const [chatConversation, setChatConversation] = useState<Conversation | null>(null);
   const chatTx = useSharedValue(SCREEN_WIDTH);
@@ -106,6 +115,7 @@ export default function NativeNavigator() {
       !!bookingRatingSpaId ||
       !!bookingRatingTherapistId ||
       !!invoiceOverlay ||
+      !!profileOverlay ||
       !!chatConversation,
     [
       homeServicesVisible,
@@ -119,6 +129,7 @@ export default function NativeNavigator() {
       bookingRatingSpaId,
       bookingRatingTherapistId,
       invoiceOverlay,
+      profileOverlay,
       chatConversation,
     ]
   );
@@ -221,6 +232,17 @@ export default function NativeNavigator() {
   }, [invoiceOverlay, bookingsInvoiceTx]);
   const bookingsInvoiceStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: bookingsInvoiceTx.value }],
+  }));
+
+  // Profile overlay animation
+  useEffect(() => {
+    profileOverlayTx.value = withTiming(
+      profileOverlay ? 0 : SCREEN_WIDTH,
+      { duration: TRANSITION_DURATION }
+    );
+  }, [profileOverlay, profileOverlayTx]);
+  const profileOverlayStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: profileOverlayTx.value }],
   }));
 
   // Chat animation
@@ -352,6 +374,13 @@ export default function NativeNavigator() {
     );
   };
 
+  const openProfileOverlay = (id: ProfileOverlayId) => setProfileOverlay(id);
+  const closeProfileOverlay = () => {
+    profileOverlayTx.value = withTiming(SCREEN_WIDTH, { duration: EXIT_TRANSITION_DURATION }, () =>
+      runOnJS(setProfileOverlay)(null)
+    );
+  };
+
   // Messaging handlers
   const openChat = (conversation: Conversation) => setChatConversation(conversation);
   const closeChat = () => {
@@ -427,6 +456,10 @@ export default function NativeNavigator() {
         closeBookingDetails();
         return true;
       }
+      if (profileOverlay) {
+        closeProfileOverlay();
+        return true;
+      }
       if (chatConversation) {
         closeChat();
         return true;
@@ -446,11 +479,13 @@ export default function NativeNavigator() {
     homeServicesVisible,
     homeTopRatedVisible,
     invoiceOverlay,
+    profileOverlay,
     bookingSelectedId,
     bookingRatingSpaId,
     bookingRatingTherapistId,
     closeChat,
     closeBookingInvoice,
+    closeProfileOverlay,
     closeHomeBook,
     closeHomeNotifications,
     closeHomeSalon,
@@ -501,7 +536,13 @@ export default function NativeNavigator() {
         </RisingPage>
 
         <RisingPage visible={activeTab === 'profile'} fadeIn={false} fadeOut={false}>
-          <ProfileScreen isActive={activeTab === 'profile'} />
+          <ProfileScreen
+            isActive={activeTab === 'profile'}
+            onNavigateToProfileEdit={() => openProfileOverlay('edit')}
+            onNavigateToPasswordChange={() => openProfileOverlay('password')}
+            onNavigateToNotifications={() => openProfileOverlay('notifications')}
+            onNavigateToHelp={() => openProfileOverlay('help')}
+          />
         </RisingPage>
       </View>
 
@@ -794,6 +835,36 @@ export default function NativeNavigator() {
             vatRate={invoiceOverlay.vatRate}
             discounts={invoiceOverlay.discounts}
           />
+        </Animated.View>
+      )}
+
+      {/* Overlays - Profile */}
+      {profileOverlay && (
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 16,
+            },
+            profileOverlayStyle,
+          ]}
+        >
+          {profileOverlay === 'edit' && (
+            <ProfileEditScreen onBack={closeProfileOverlay} />
+          )}
+          {profileOverlay === 'password' && (
+            <PasswordChangeScreen onBack={closeProfileOverlay} />
+          )}
+          {profileOverlay === 'notifications' && (
+            <NotificationPreferencesScreen onBack={closeProfileOverlay} />
+          )}
+          {profileOverlay === 'help' && (
+            <HelpScreen onBack={closeProfileOverlay} />
+          )}
         </Animated.View>
       )}
 
