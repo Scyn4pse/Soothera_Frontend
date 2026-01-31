@@ -521,6 +521,10 @@ export default function NativeNavigator() {
         closeBookingDetails();
         return true;
       }
+      if (chatConversation) {
+        closeChat();
+        return true;
+      }
       if (selectedFaq) {
         closeFaqDetail();
         return true;
@@ -531,10 +535,6 @@ export default function NativeNavigator() {
       }
       if (profileOverlay) {
         closeProfileOverlay();
-        return true;
-      }
-      if (chatConversation) {
-        closeChat();
         return true;
       }
       return false;
